@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Introduction to Programming & Python | Lecture Presentation</title>
+
+  <!-- ⚠️ OFFLINE DELIVERY: before lecturing, download Tailwind + the two Google Fonts
+       and reference them locally — a dead venue Wi-Fi kills this whole file otherwise. -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488' },
+            pyYellow: '#FFD43B',
+            pyBlue: '#387EB8',
+            darkBg: '#090d16',
+            cardBg: '#111827',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #090d16;
+      color: #f3f4f6;
+      overflow: hidden;
+      /* user-select: none REMOVED — students must be able to copy code examples */
+    }
+    .slide {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden; /* keep inactive slides away from screen readers */
+      transform: scale(0.98) translateY(8px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: absolute;
+      inset: 0;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      position: relative;
+      overflow-y: auto; /* dense slides scroll instead of clipping on small screens */
+    }
+    /* Center content but never clip the top when content is taller than viewport */
+    .slide.active > * { margin-top: auto; margin-bottom: auto; }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.05); }
+    }
+    .ambient-glow { animation: pulseGlow 9s ease-in-out infinite; }
+
+    /* Accessibility: floor the 10/11px utility classes at readable sizes */
+    .text-\[10px\] { font-size: 11px !important; }
+    .text-\[11px\] { font-size: 12px !important; }
+
+    /* Accessibility: visible keyboard focus */
+    button:focus-visible, [role="button"]:focus-visible, summary:focus-visible {
+      outline: 2px solid #2dd4bf;
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+
+    /* Notes modal: animatable + actually hidden from AT when closed */
+    #notes-modal { transition: transform 0.3s ease, visibility 0.3s; }
+    #notes-modal.closed { transform: translateX(100%); visibility: hidden; }
+
+    /* Click-to-reveal prediction boxes (works with zero JS) */
+    details.quick-check > summary { cursor: pointer; }
+    details.quick-check > summary::-webkit-details-marker { display: none; }
+    details.quick-check .chevron { display: inline-block; transition: transform 0.2s; }
+    details.quick-check[open] .chevron { transform: rotate(90deg); }
+
+    /* Reusable Syntax Highlighter & Code Panels */
+    .code-panel {
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 0.875rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      color: #f3f4f6;
+    }
+    .tok-str { color: #34d399; } /* Emerald / Strings */
+    .tok-num { color: #22d3ee; } /* Cyan / Numbers */
+    .tok-fn  { color: #fbbf24; } /* Amber / Functions */
+    .tok-kw  { color: #f472b6; font-weight: 500; } /* Pink / Keywords & Booleans */
+    .tok-com { color: #9ca3af; font-style: italic; } /* Gray / Comments */
+
+    /* Force literal keyboard characters (disable font ligatures turning != into ≠ or == into connected bars) */
+    code, pre, kbd, .font-mono, .code-panel, table {
+      font-variant-ligatures: none !important;
+      font-feature-settings: "liga" 0, "calt" 0 !important;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between relative selection:bg-brand-500 selection:text-white">
+
+  <!-- Ambient background glow -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="ambient-glow absolute -top-40 -left-40 w-96 h-96 rounded-full bg-teal-600/20 blur-[130px]"></div>
+    <div class="ambient-glow absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[140px]" style="animation-delay: -3s;"></div>
+    <div class="ambient-glow absolute -bottom-40 left-1/3 w-[450px] h-[450px] rounded-full bg-purple-600/15 blur-[130px]" style="animation-delay: -6s;"></div>
+  </div>
+
+  <!-- TOP HEADER -->
+  <header class="relative z-20 px-8 py-4 flex items-center justify-between border-b border-white/5 bg-darkBg/70 backdrop-blur-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-500 to-cyan-400 flex items-center justify-center font-bold text-darkBg text-sm shadow-md shadow-brand-500/20">
+        &lt;/&gt;
+      </div>
+      <div>
+        <h1 class="text-sm font-semibold tracking-wide uppercase text-gray-400">CS Foundation Series</h1>
+        <p class="text-xs text-brand-400 font-medium tracking-wider">Usizo Lecture &bull; Introduction to Programming & Python</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 glass-pill px-3 py-1.5 rounded-full text-xs font-mono text-gray-300" aria-live="polite">
+        <span id="current-slide-num" class="text-brand-400 font-bold text-sm">01</span>
+        <span class="text-gray-500">/</span>
+        <span id="total-slides-num">23</span>
+      </div>
+
+      <div class="flex items-center space-x-1.5">
+        <button onclick="toggleNotesModal()" aria-label="Speaker notes (N)" title="Speaker Notes (N)" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition border border-transparent hover:border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+        </button>
+        <button onclick="toggleOverviewModal()" aria-label="Slide grid (G)" title="Slide Grid (G)" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition border border-transparent hover:border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </button>
+        <button onclick="toggleFullScreen()" aria-label="Fullscreen (F)" title="Fullscreen (F)" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition border border-transparent hover:border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SLIDES CONTAINER -->
+  <main class="relative z-10 flex-1 flex items-center justify-center p-6 md:p-10 max-w-7xl mx-auto w-full overflow-hidden">
+
+    <!-- ==================== SLIDE 1: WHAT IS A PROGRAM ==================== -->
+    <div id="slide-1" class="slide active w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-brand-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 01</span><span>&bull;</span><span>Human Language & Instructions</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            What is a <span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Program?</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-brand-500/30">1</div>
+              <p><strong class="text-white">Human Language is Recipe-Based:</strong> In daily life, we communicate instructions through recipes and steps. Making a cup of tea requires a strict sequence of actions.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-brand-500/30">2</div>
+              <p><strong class="text-white">A Program is Just a Recipe:</strong> A computer program is simply a step-by-step sequence of unambiguous instructions written to solve a computational problem.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-brand-500/30">3</div>
+              <p><strong class="text-white">Strict Order Matters:</strong> If you pour in the milk before the water has boiled, you ruin the tea. In programming, executing instructions out of order causes bugs or crashes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="glass-card rounded-2xl p-6 space-y-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+              The Tea-Making Procedure (Algorithm)
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3.5">
+              <div class="w-10 h-10 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center text-xl flex-shrink-0">🫖</div>
+              <div>
+                <div class="text-xs font-bold text-white">Step 1: Boil Water</div>
+                <div class="text-[11px] text-gray-400">Heat clean water to 100°C (Baseline Input).</div>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3.5">
+              <div class="w-10 h-10 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center text-xl flex-shrink-0">🍃</div>
+              <div>
+                <div class="text-xs font-bold text-white">Step 2: Add Tea Leaves</div>
+                <div class="text-[11px] text-gray-400">Infuse tea leaves and spices for 3 minutes.</div>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center space-x-3.5">
+              <div class="w-10 h-10 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center text-xl flex-shrink-0">🥛</div>
+              <div>
+                <div class="text-xs font-bold text-white">Step 3: Add Milk & Sugar</div>
+                <div class="text-[11px] text-gray-400">Simmer gently to dissolve sugar completely.</div>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center space-x-3.5">
+              <div class="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-xl flex-shrink-0">☕</div>
+              <div>
+                <div class="text-xs font-bold text-emerald-300">Step 4: Strain & Serve</div>
+                <div class="text-[11px] text-gray-300">Filter out leaves. Hot tea produced (Output)!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 2: THE 0 & 1 BARRIER ==================== -->
+    <div id="slide-2" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 02</span><span>&bull;</span><span>The Communication Barrier</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            The Problem: Computers <br>
+            <span class="bg-gradient-to-r from-amber-400 to-rose-400 bg-clip-text text-transparent">Can't Understand Human Words</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">1</div>
+              <p><strong class="text-white">Human Language Has Ambiguity:</strong> Words rely heavily on slang, context, and intuition. When you say "make tea", a human uses common sense. A computer has zero intuition.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">2</div>
+              <p><strong class="text-white">Silicon Only Knows Electricity:</strong> A processor consists of microscopic physical transistors. They only understand two electrical states: <span class="font-mono text-cyan-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">0 = OFF (Low Voltage)</span> and <span class="font-mono text-amber-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">1 = ON (High Voltage)</span>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">3</div>
+              <p><strong class="text-white">The Early Era:</strong> Early programmers had to manually punch holes in paper cards or flip switches to enter raw 0s and 1s directly into mainframes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              The Divide: Human Mind vs. Silicon Machine
+            </div>
+            <div class="p-3.5 rounded-xl bg-cyan-950/30 border border-cyan-500/30 space-y-1">
+              <div class="text-xs font-bold text-cyan-300">Human Language</div>
+              <div class="text-sm font-medium text-white">"Please calculate total price with tax"</div>
+              <div class="text-[11px] text-gray-400">Expressive, conceptual, but full of ambiguity.</div>
+            </div>
+            <div class="flex justify-center text-gray-500 text-lg">⬇️ Incompatible ⬇️</div>
+            <div class="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-1">
+              <div class="text-xs font-bold text-amber-300">Machine Language (Binary)</div>
+              <div class="text-xs font-mono text-amber-400 tracking-wider">01001000 01100101 01101100 01110000</div>
+              <div class="text-[11px] text-gray-400">Pure electrical voltage states. Unreadable to humans!</div>
+            </div>
+            <div class="p-3 rounded-lg bg-black/40 border border-white/10 text-[11px] text-gray-400">
+              💡 <strong>"What about ChatGPT?"</strong> Modern AI doesn't think in words either; it converts text into mathematical probabilities executed on binary silicon.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 3: HIGH-LEVEL LANGUAGES ==================== -->
+    <div id="slide-3" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 03</span><span>&bull;</span><span>The Human Bridge</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            High-Level <br>
+            <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Programming Languages</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Designed for Humans:</strong> High-level languages allow us to write computer logic using familiar English words like <code class="text-teal-300 font-mono">if</code>, <code class="text-teal-300 font-mono">while</code>, and <code class="text-teal-300 font-mono">print</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Massive Productivity:</strong> Writing 1 single line of high-level code replaces dozens of tedious machine instructions, drastically reducing bugs and mistakes.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Portability Across Devices:</strong> High-level code can run on Intel PCs, Apple MacBooks, and smartphones without having to re-engineer code for each processor's unique wiring.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Goal: Print "Hello, World!" to the screen
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-rose-400 font-semibold">❌ Low-Level Machine Assembly:</span>
+                <span class="text-gray-500 text-[10px] font-mono">12 tedious lines</span>
+              </div>
+              <pre class="bg-black/60 p-3.5 rounded-xl border border-rose-500/20 text-[11px] font-mono text-gray-400 leading-relaxed overflow-x-auto"><code>section .data
+    msg db 'Hello, World!', 0xa
+section .text
+    global _start
+_start:
+    mov edx, 14
+    mov ecx, msg
+    mov ebx, 1
+    mov eax, 4
+    int 0x80
+    mov eax, 1
+    int 0x80</code></pre>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-emerald-400 font-semibold">✅ High-Level Python:</span>
+                <span class="text-emerald-400 text-[10px] font-bold">1 simple, readable line</span>
+              </div>
+              <pre class="bg-teal-950/30 p-3.5 rounded-xl border border-brand-500/30 text-sm font-mono text-teal-200"><code>print(<span class="text-amber-300">"Hello, World!"</span>)</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 4: COMPILERS VS INTERPRETERS ==================== -->
+    <div id="slide-4" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-5 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 04</span><span>&bull;</span><span>The Translation Process</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Compilers vs. <br>
+            <span class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">Interpreters</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-indigo-500/30">1</div>
+              <p><strong class="text-white">The Need for a Translator:</strong> Because computers can only execute binary 0s and 1s, we need a translator program to turn our high-level code into machine instructions.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-indigo-500/30">2</div>
+              <p><strong class="text-white">Compiler (Like a Published Book):</strong> Translates the <em>entire program</em> all at once upfront into a standalone binary file (<code class="text-indigo-300 font-mono">.exe</code> on Windows). Examples: C, C++, Rust.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-indigo-500/30">3</div>
+              <p><strong class="text-white">Interpreter (Like a Live Translator):</strong> Reads and runs the source code <em>line-by-line in real time</em>. Examples: Python, JavaScript.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7 space-y-4">
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-indigo-500 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-indigo-300 uppercase tracking-wider">📦 The Compiler Workflow (Batch Translation)</span>
+              <span class="text-[11px] text-gray-400 font-mono">C / C++ / Rust</span>
+            </div>
+            <div class="flex items-center space-x-2 text-xs text-center">
+              <div class="flex-1 p-2 rounded-lg bg-white/5 border border-white/10">Full Source Code</div>
+              <span class="text-gray-500">➔</span>
+              <div class="flex-1 p-2 rounded-lg bg-indigo-500/20 border border-indigo-500/40 font-bold text-indigo-300">Compiler</div>
+              <span class="text-gray-500">➔</span>
+              <div class="flex-1 p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/40 font-bold text-emerald-300">Machine Binary (e.g., .exe)</div>
+            </div>
+            <div class="text-[11px] text-gray-400 leading-relaxed">
+              Analogy: Translating an entire foreign book into English before publication. Fast to read afterward!
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-5 border-l-4 border-purple-500 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-300 uppercase tracking-wider">⚡ The Interpreter Workflow (Line-by-Line)</span>
+              <span class="text-[11px] text-emerald-400 font-mono font-bold">Python</span>
+            </div>
+            <div class="flex items-center space-x-2 text-xs text-center">
+              <div class="flex-1 p-2 rounded-lg bg-white/5 border border-white/10">Python Script (.py)</div>
+              <span class="text-gray-500">➔</span>
+              <div class="flex-1 p-2 rounded-lg bg-purple-500/20 border border-purple-500/40 font-bold text-purple-300">Interpreter (Line 1, 2...)</div>
+              <span class="text-gray-500">➔</span>
+              <div class="flex-1 p-2 rounded-lg bg-cyan-500/20 border border-cyan-500/40 font-bold text-cyan-300">Instant Execution</div>
+            </div>
+            <div class="text-[11px] text-gray-400 leading-relaxed">
+              Analogy: A live diplomatic interpreter translating spoken sentences in real time. Gives immediate feedback!
+            </div>
+            <div class="text-[11px] text-gray-500 leading-relaxed pt-1 border-t border-white/5">
+              🔬 <strong>Fine print:</strong> CPython actually compiles Python into <em>bytecode</em> first, and modern JavaScript engines JIT-compile — the line-by-line model is the classic teaching simplification. Details in later courses!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 5: WELCOME TO PYTHON ==================== -->
+    <div id="slide-5" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 05</span><span>&bull;</span><span>The Gold Standard</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Welcome to <span class="bg-gradient-to-r from-pyYellow to-emerald-400 bg-clip-text text-transparent">Python</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-yellow-500/30">1</div>
+              <p><strong class="text-white">Origins (1991):</strong> Created by Dutch computer scientist <strong class="text-white">Guido van Rossum</strong>. Named after the comedy troupe <em>Monty Python's Flying Circus</em>, not the snake!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-yellow-500/30">2</div>
+              <p><strong class="text-white">Readability First:</strong> Code is read far more often than it is written. Python avoids confusing symbols and curly braces <code class="text-yellow-300 font-mono">{ }</code>, using clean indentation instead.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-yellow-500/30">3</div>
+              <p><strong class="text-white">Gentle Yet Mighty:</strong> Easy enough for an absolute beginner to learn on day one, yet powerful enough to drive Artificial Intelligence, NASA simulations, Netflix, and Spotify.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Python at a Glance
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-center text-xs">
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-xl font-bold text-pyYellow">1991</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">First Released</div>
+              </div>
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+                <div class="text-xl font-bold text-teal-400">#1</div>
+                <div class="text-[11px] text-gray-400 mt-0.5">Most Popular (TIOBE Index)</div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <pre class="py-code" data-title="Clean Syntax Example:">name = "Usizo Student"
+print(f"Welcome to coding, {name}!")</pre>
+              <div class="text-[11px] text-gray-500">🔭 <em>name</em> here is a variable — full story on the next slides!</div>
+            </div>
+
+            <div class="text-[11px] text-gray-400 italic text-center">
+              "Simple is better than complex." &bull; The Zen of Python
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 6: THE print() FUNCTION ==================== -->
+    <div id="slide-6" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 06</span><span>&bull;</span><span>Standard Output</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            The <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">print()</span> Function: Giving Code a Voice
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">1</div>
+              <p><strong class="text-white">Speaking to the Screen:</strong> <code class="text-emerald-300 font-mono">print()</code> is the fundamental tool used to display text, messages, or results on the terminal display.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">2</div>
+              <p><strong class="text-white">Multiple Items:</strong> Commas print multiple items with an automatic space separator: <code class="text-teal-300 font-mono">print("Score:", 95, "points")</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">3</div>
+              <p><strong class="text-white">Escape Sequences (Special Formatting):</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-amber-300 font-mono">\n</code> drops down to a <strong>New Line</strong>.</li>
+                  <li><code class="text-amber-300 font-mono">\t</code> inserts a <strong>Tab space</strong> (indents text).</li>
+                  <li><code class="text-amber-300 font-mono">\"</code> prints a literal quotation mark inside strings.</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">4</div>
+              <p><strong class="text-white">Code Comments (<code class="text-emerald-300 font-mono">#</code>):</strong> Notes for humans that Python ignores — on their own line or after code. <em>Remember: making mistakes and seeing red errors is a completely normal part of coding!</em></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Code & Terminal Output
+            </div>
+
+            <pre class="py-code" data-title="Python Script:">print("Item\tPrice\nTea\t$2.50")</pre>
+
+            <!-- white-space preserved so the \t demo actually renders -->
+            <div class="p-4 rounded-xl bg-black/90 border border-white/10 space-y-1">
+              <div class="text-gray-500 text-[10px] uppercase font-mono">Terminal Output:</div>
+              <pre class="text-white leading-relaxed font-mono text-xs whitespace-pre">Item    Price
+Tea     $2.50</pre>
+            </div>
+
+            <div class="space-y-1">
+              <pre class="py-code" data-title="Modern F-Strings:">name = "Alex"
+print(f"Welcome, {name}!")</pre>
+              <div class="text-[11px] text-gray-500 mt-1">🔭 <em>name</em> is a variable — the next slide is all about them!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 7: VARIABLES ==================== -->
+    <div id="slide-7" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 07</span><span>&bull;</span><span>Data Storage</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Variables: The <br>
+            <span class="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Labeled Storage Containers</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">1</div>
+              <p><strong class="text-white">The Kitchen Jars Analogy:</strong> In your kitchen, you have jars labeled <em>"Salt"</em>, <em>"Sugar"</em>, and <em>"Pepper"</em>. Each jar has space inside and a distinct label on the outside.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">2</div>
+              <p><strong class="text-white">Memory with a Name Tag:</strong> In computer RAM, a variable is a named storage slot where data is held so the program can find and reuse it later.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">3</div>
+              <p><strong class="text-white">The Assignment Operator (<code class="text-amber-300 font-mono">=</code>):</strong> The single equals sign means <em>store this inside that container</em>: <code class="text-teal-300 font-mono">salt = "Sea Salt"</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">4</div>
+              <p><strong class="text-white">Values Can Be Replaced:</strong> Just like refilling an empty sugar jar, you can change a variable's value anytime (<code class="text-teal-300 font-mono">score = 10</code>, then later <code class="text-teal-300 font-mono">score = 25</code>).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              The Mental Model: Labeled Memory Boxes
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl">🧂</span>
+                <div>
+                  <div class="text-xs font-bold text-amber-400 font-mono">salt</div>
+                  <div class="text-[11px] text-gray-400">Container Name (Variable)</div>
+                </div>
+              </div>
+              <div class="font-mono text-xs text-emerald-300 bg-black/40 px-3 py-1 rounded-lg border border-white/5">"Fine Sea Salt"</div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl">🍬</span>
+                <div>
+                  <div class="text-xs font-bold text-amber-400 font-mono">sugar_spoons</div>
+                  <div class="text-[11px] text-gray-400">Container Name (Variable)</div>
+                </div>
+              </div>
+              <div class="font-mono text-xs text-cyan-300 bg-black/40 px-3 py-1 rounded-lg border border-white/5">2.5</div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="text-2xl">🫙</span>
+                <div>
+                  <div class="text-xs font-bold text-amber-400 font-mono">pepper</div>
+                  <div class="text-[11px] text-gray-400">Container Name (Variable)</div>
+                </div>
+              </div>
+              <div class="font-mono text-xs text-emerald-300 bg-black/40 px-3 py-1 rounded-lg border border-white/5">"Black Pepper"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 8: NAMING RULES ==================== -->
+    <div id="slide-8" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 08</span><span>&bull;</span><span>Syntax Rules</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Rules for Naming <br>
+            <span class="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">Variables in Python</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">1</div>
+              <p><strong class="text-white">Allowed Characters Only:</strong> Letters (<code class="text-rose-300 font-mono">a-z</code>), numbers (<code class="text-rose-300 font-mono">0-9</code>), and underscores (<code class="text-rose-300 font-mono">_</code>). No spaces and no special symbols.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">2</div>
+              <p><strong class="text-white">Cannot Start with a Number:</strong> Must begin with a letter or underscore. <code class="text-emerald-400 font-mono">player1</code> is valid ✅, but <code class="text-rose-400 font-mono">1player</code> is an error ❌.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">3</div>
+              <p><strong class="text-white">Case-Sensitive:</strong> <code class="text-amber-300 font-mono">age</code>, <code class="text-amber-300 font-mono">Age</code>, and <code class="text-amber-300 font-mono">AGE</code> are three completely separate variables.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">4</div>
+              <p><strong class="text-white">No Python Keywords:</strong> You cannot use reserved command words as names (like <code class="text-rose-400 font-mono">if</code>, <code class="text-rose-400 font-mono">while</code>, <code class="text-rose-400 font-mono">for</code>, <code class="text-rose-400 font-mono">class</code>, <code class="text-rose-400 font-mono">True</code>).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Quick Reference: Valid vs. Invalid Names
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+              <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-2">
+                <div class="font-bold text-emerald-400 text-xs mb-2">✅ Valid Names</div>
+                <div class="text-emerald-200">user_age</div>
+                <div class="text-emerald-200">total_score</div>
+                <div class="text-emerald-200">player_1</div>
+                <div class="text-emerald-200">_secret_key</div>
+              </div>
+              <div class="p-4 rounded-xl bg-rose-950/20 border border-rose-500/30 space-y-2">
+                <div class="font-bold text-rose-400 text-xs mb-2">❌ Invalid Names</div>
+                <div class="text-rose-300">user age <span class="text-[10px] text-gray-500">(space)</span></div>
+                <div class="text-rose-300">1st_place <span class="text-[10px] text-gray-500">(number first)</span></div>
+                <div class="text-rose-300">total-score <span class="text-[10px] text-gray-500">(hyphen)</span></div>
+                <div class="text-rose-300">while <span class="text-[10px] text-gray-500">(keyword)</span></div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-xs text-gray-300 flex items-start gap-2">
+              <span class="text-base">🐍</span>
+              <span><strong>Python Style Convention:</strong> Use lowercase words separated by underscores (<code class="text-amber-300 font-mono">snake_case</code>), e.g., <code class="text-emerald-300 font-mono">student_name</code>.<br>
+              <span class="text-[11px] text-gray-500">⚠️ Note: <code class="font-mono">print</code> is a built-in <em>function</em>, not a keyword — so <code class="font-mono">print = 5</code> is legal but shadows the real <code class="font-mono">print</code>. Always avoid it!</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 9: DATA TYPES ==================== -->
+    <div id="slide-9" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 09</span><span>&bull;</span><span>Classifying Information</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Data Types: <br>
+            <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">What Kind of Stuff</span> Goes Inside?
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Why Types Matter:</strong> You wouldn't pour hot soup into an envelope! A computer must know what category data belongs to so it knows what operations are allowed.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Fundamental Types:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-emerald-300 font-mono font-bold">str</code> (String): Text wrapped in quotes (<code class="text-emerald-300">"Alice"</code>, <code class="text-emerald-300">'Tea'</code>).</li>
+                  <li><code class="text-amber-300 font-mono font-bold">int</code> (Integer): Whole numbers (<code class="text-amber-300">25</code>, <code class="text-amber-300">-5</code>, <code class="text-amber-300">100</code>).</li>
+                  <li><code class="text-purple-300 font-mono font-bold">float</code> (Floating-Point): Decimal numbers (<code class="text-purple-300">9.99</code>, <code class="text-purple-300">3.14</code>).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Automatic Detection:</strong> Python is dynamically typed—it figures out the type automatically from the value you store.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Crucial Contrast: Numbers vs. Text
+            </div>
+
+            <div class="p-4 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1.5 font-mono text-xs">
+              <div class="text-gray-400 text-[11px] font-sans">1. Integers (Numbers do Math):</div>
+              <div class="text-amber-300 font-bold text-sm">5 + 5 ➔ 10</div>
+              <div class="text-gray-500 text-[10px]">Calculates mathematical sum.</div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-1.5 font-mono text-xs">
+              <div class="text-gray-400 text-[11px] font-sans">2. Strings (Quotes glue text together):</div>
+              <div class="text-emerald-300 font-bold text-sm">"5" + "5" ➔ "55"</div>
+              <div class="text-gray-500 text-[10px]">Concatenates (glues) characters together.</div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-black/40 border border-white/10 text-xs text-gray-400">
+              💡 Putting quotation marks around any number turns it into plain text!
+            </div>
+
+            <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs text-gray-300">
+              🔍 <strong>Try it yourself:</strong> <code class="text-cyan-300 font-mono">type(5)</code> → <code class="text-white font-mono">&lt;class 'int'&gt;</code>, <code class="text-cyan-300 font-mono">type("5")</code> → <code class="text-white font-mono">&lt;class 'str'&gt;</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 10: BOOLEANS ==================== -->
+    <div id="slide-10" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 10</span><span>&bull;</span><span>Two-State Realities</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Other Data Types: The <br>
+            <span class="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">Boolean (bool)</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">1</div>
+              <p><strong class="text-white">Only Two States in the Universe:</strong> A Boolean (<code class="text-rose-300 font-mono">bool</code>) is the simplest data type in computing. It can only ever hold one of two values: <code class="text-emerald-400 font-mono font-bold">True</code> or <code class="text-rose-400 font-mono font-bold">False</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">2</div>
+              <p><strong class="text-white">Everyday Real-Life Switches:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li>A bedroom light switch: either <strong>ON</strong> (<code class="text-emerald-400 font-mono">True</code>) or <strong>OFF</strong> (<code class="text-rose-400 font-mono">False</code>).</li>
+                  <li>Front door: either locked (<code class="text-emerald-400 font-mono">is_door_locked = True</code>) or unlocked (<code class="text-rose-400 font-mono">False</code>).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">3</div>
+              <p><strong class="text-white">The Apps We Use Everyday:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li>Instagram / Netflix: <code class="text-cyan-300 font-mono">is_user_logged_in = True</code></li>
+                  <li>Amazon Cart: <code class="text-cyan-300 font-mono">is_cart_empty = False</code></li>
+                  <li>Phone Battery: <code class="text-cyan-300 font-mono">is_charging = True</code></li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Real-Life Boolean States
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="p-3 rounded-xl bg-black/50 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">💡</span>
+                  <div>
+                    <div class="text-xs font-bold text-white">Living Room Light</div>
+                    <div class="text-[11px] font-mono text-gray-400">is_light_on</div>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">True</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/50 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">🔒</span>
+                  <div>
+                    <div class="text-xs font-bold text-white">Front Door Lock</div>
+                    <div class="text-[11px] font-mono text-gray-400">is_door_locked</div>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">True</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/50 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">👤</span>
+                  <div>
+                    <div class="text-xs font-bold text-white">Netflix Account Login</div>
+                    <div class="text-[11px] font-mono text-gray-400">is_logged_in</div>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30">False</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/50 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">⚡</span>
+                  <div>
+                    <div class="text-xs font-bold text-white">Phone Battery Status</div>
+                    <div class="text-[11px] font-mono text-gray-400">is_charging</div>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">True</span>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-gray-400">
+              💡 <strong>Remember:</strong> In Python, Booleans always start with a capital letter: <code class="text-emerald-400 font-bold font-mono">True</code> and <code class="text-rose-400 font-bold font-mono">False</code>. And pros name them with an <code class="text-cyan-300 font-mono">is_</code> prefix: <code class="text-cyan-300 font-mono">is_ready</code>, <code class="text-cyan-300 font-mono">is_paid</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 11: THE input() FUNCTION ==================== -->
+    <div id="slide-11" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 11</span><span>&bull;</span><span>User Interaction</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            The <span class="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">input()</span> Function: Listening to the User
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-violet-500/30">1</div>
+              <p><strong class="text-white">A Two-Way Conversation:</strong> While <code class="text-emerald-300 font-mono">print()</code> talks, <code class="text-violet-300 font-mono">input()</code> listens. It pauses the program and waits for the user to type and press <kbd class="px-1.5 py-0.5 bg-white/10 rounded text-xs">Enter</kbd>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-violet-500/30">2</div>
+              <p><strong class="text-white">The Golden Rule: It's Always a String:</strong> Everything that comes from <code class="text-violet-300 font-mono">input()</code> is saved as text (<code class="text-emerald-300 font-mono">str</code>)—even if the user types <code class="text-amber-300 font-mono">20</code>!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-violet-500/30">3</div>
+              <p><strong class="text-white">Converting to Numbers (Type Casting):</strong> If you want to do arithmetic with user input, you must convert it using <code class="text-cyan-300 font-mono">int()</code>:
+                <code class="text-teal-300 font-mono block mt-1">age = int(input("Enter your age: "))</code>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              How input() Works in Code
+            </div>
+
+            <div class="space-y-3 font-mono text-xs">
+              <div class="p-3.5 rounded-xl bg-black/60 border border-white/10">
+                <div class="text-gray-500 text-[10px] uppercase">1. Prompt the User:</div>
+                <div class="text-violet-300 mt-1">name = input("What is your name? ")</div>
+                <div class="text-[11px] text-gray-400 mt-1">Program halts and waits for keystrokes...</div>
+              </div>
+              <div class="p-3.5 rounded-xl bg-black/60 border border-white/10">
+                <div class="text-gray-500 text-[10px] uppercase">2. Convert Input for Math:</div>
+                <div class="text-amber-300 mt-1">birth_year = int(input("Birth year: "))</div>
+                <div class="text-[11px] text-gray-400 mt-1">Wraps input in int() so the value is a real number!</div>
+              </div>
+              <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30">
+                <div class="text-gray-500 text-[10px] uppercase">3. Print the Result:</div>
+                <div class="text-emerald-300 mt-1">print(f"Hello {name}, born in {birth_year}!")</div>
+                <div class="text-[11px] text-gray-400 mt-1">No hardcoded "current year" — the output never goes stale!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 12: PYTHON TOKENS ==================== -->
+    <div id="slide-12" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-5">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 12</span><span>&bull;</span><span>Grammar of Code</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+            Python Tokens: <br>
+            <span class="bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">The 5 Building Blocks</span>
+          </h2>
+
+          <div class="space-y-3 text-gray-300 text-xs lg:text-sm leading-relaxed">
+            <p><strong class="text-white">What is a Token?</strong> Just like sentences in English are constructed from nouns, verbs, adjectives, and punctuation, every line of Python is broken down into <strong>Tokens</strong> — the smallest individual units of code.</p>
+
+            <div class="space-y-2 pt-1">
+              <div class="flex items-start space-x-2.5">
+                <span class="text-amber-400 text-sm flex-shrink-0">🔑</span>
+                <div><strong class="text-amber-300 font-mono">1. Keywords:</strong> Reserved words built into Python's grammar (<code class="text-gray-300 font-mono text-[11px]">if</code>, <code class="text-gray-300 font-mono text-[11px]">else</code>, <code class="text-gray-300 font-mono text-[11px]">for</code>, <code class="text-gray-300 font-mono text-[11px]">while</code>, <code class="text-gray-300 font-mono text-[11px]">def</code>).</div>
+              </div>
+              <div class="flex items-start space-x-2.5">
+                <span class="text-orange-400 text-sm flex-shrink-0">🧰</span>
+                <div><strong class="text-orange-300 font-mono">Built-in Functions (honorary tokens):</strong> Ready-made tools Python ships with (<code class="text-gray-300 font-mono text-[11px]">print</code>, <code class="text-gray-300 font-mono text-[11px]">input</code>, <code class="text-gray-300 font-mono text-[11px]">int</code>) — <em>not</em> keywords, but just as essential.</div>
+              </div>
+              <div class="flex items-start space-x-2.5">
+                <span class="text-teal-400 text-sm flex-shrink-0">🏷️</span>
+                <div><strong class="text-teal-300 font-mono">2. Identifiers:</strong> Names we give to variables/functions (<code class="text-gray-300 font-mono text-[11px]">tea_name</code>, <code class="text-gray-300 font-mono text-[11px]">price</code>, <code class="text-gray-300 font-mono text-[11px]">cups</code>, <code class="text-gray-300 font-mono text-[11px]">total</code>).</div>
+              </div>
+              <div class="flex items-start space-x-2.5">
+                <span class="text-purple-400 text-sm flex-shrink-0">💎</span>
+                <div><strong class="text-purple-300 font-mono">3. Literals:</strong> The raw constant values (<code class="text-gray-300 font-mono text-[11px]">"Masala Chai"</code>, <code class="text-gray-300 font-mono text-[11px]">2.50</code>, <code class="text-gray-300 font-mono text-[11px]">True</code>).</div>
+              </div>
+              <div class="flex items-start space-x-2.5">
+                <span class="text-rose-400 text-sm flex-shrink-0">⚡</span>
+                <div><strong class="text-rose-300 font-mono">4. Operators:</strong> Action symbols for arithmetic and logic (<code class="text-gray-300 font-mono text-[11px]">=</code>, <code class="text-gray-300 font-mono text-[11px]">*</code>, <code class="text-gray-300 font-mono text-[11px]">+</code>, <code class="text-gray-300 font-mono text-[11px]">-</code>, <code class="text-gray-300 font-mono text-[11px]">and</code>).</div>
+              </div>
+              <div class="flex items-start space-x-2.5">
+                <span class="text-blue-400 text-sm flex-shrink-0">🎯</span>
+                <div><strong class="text-blue-300 font-mono">5. Punctuators:</strong> Structural symbols (<code class="text-gray-300 font-mono text-[11px]">( )</code>, <code class="text-gray-300 font-mono text-[11px]">{ }</code>, <code class="text-gray-300 font-mono text-[11px]">[ ]</code>, <code class="text-gray-300 font-mono text-[11px]">:</code>, <code class="text-gray-300 font-mono text-[11px]">,</code>).</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-3">
+          <div class="glass-card rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Mini-Program: The Tokens in Action</span>
+              <span class="text-[10px] font-mono text-brand-400 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">Putting It All Together</span>
+            </div>
+
+            <!-- Complete readable code: keywords amber, built-ins orange -->
+            <div class="p-4 rounded-xl bg-black/80 border border-white/10 font-mono text-xs leading-relaxed space-y-1.5">
+              <div><span class="text-teal-300" title="Identifier">tea_name</span> <span class="text-rose-400 font-bold" title="Operator">=</span> <span class="text-purple-300" title="Literal">"Masala Chai"</span></div>
+              <div><span class="text-teal-300" title="Identifier">price</span> <span class="text-rose-400 font-bold" title="Operator">=</span> <span class="text-purple-300" title="Literal">2.50</span></div>
+              <div><span class="text-teal-300" title="Identifier">cups</span> <span class="text-rose-400 font-bold" title="Operator">=</span> <span class="text-orange-300" title="Built-in function">int</span><span class="text-blue-300 font-bold" title="Punctuator">(</span><span class="text-orange-300" title="Built-in function">input</span><span class="text-blue-300 font-bold">(</span><span class="text-purple-300">"Cups: "</span><span class="text-blue-300 font-bold">))</span></div>
+              <div><span class="text-teal-300" title="Identifier">total</span> <span class="text-rose-400 font-bold" title="Operator">=</span> <span class="text-teal-300" title="Identifier">cups</span> <span class="text-rose-400 font-bold" title="Operator">*</span> <span class="text-teal-300" title="Identifier">price</span></div>
+              <div class="pt-1.5 text-gray-500"># Outputting with print:</div>
+              <div><span class="text-orange-300">print</span><span class="text-blue-300 font-bold">(</span><span class="text-purple-300">f"Total for {</span><span class="text-teal-300">cups</span><span class="text-purple-300">} {</span><span class="text-teal-300">tea_name</span><span class="text-purple-300">}: ${</span><span class="text-teal-300">total</span><span class="text-purple-300">}"</span><span class="text-blue-300 font-bold">)</span></div>
+            </div>
+
+            <!-- Full 6-entry legend (keywords + built-ins now included) -->
+            <div class="grid grid-cols-2 gap-2 text-[10px] font-mono pt-1">
+              <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span>Keywords: <code class="text-white">if, while, def</code></span>
+              </div>
+              <div class="p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                <span>Built-ins: <code class="text-white">print, int, input</code></span>
+              </div>
+              <div class="p-2 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+                <span>Identifiers: <code class="text-white">tea_name, price</code></span>
+              </div>
+              <div class="p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span>Literals: <code class="text-white">"Masala Chai", 2.50</code></span>
+              </div>
+              <div class="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                <span>Operators: <code class="text-white">=, *</code></span>
+              </div>
+              <div class="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <span>Punctuators: <code class="text-white">( )</code></span>
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 text-center">
+              🎉 <strong>The Complete Picture:</strong> Every Python program is assembled from these tokens. Keywords are grammar; built-ins are tools.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 13: OPERATORS OVERVIEW ==================== -->
+    <div id="slide-13" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 13</span><span>&bull;</span><span>The Operator Family</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Python Operators: <br>
+            <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">The 7 Core Families</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">What is an Operator?</strong> Special symbols that carry out computations, comparisons, or logical operations on data values (known as <em>operands</em>).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Built for Every Need:</strong> Python provides 7 distinct families of operators to handle math, decision-making, bit manipulation, and membership testing.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">The Big Three:</strong> While all 7 exist, <strong class="text-teal-300">Arithmetic</strong>, <strong class="text-amber-300">Relational</strong>, and <strong class="text-rose-300">Logical</strong> operators power the vast majority of everyday programming logic!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-2.5">
+          <div class="glass-card rounded-2xl p-5 space-y-2.5">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              The Complete 7 Operator Categories
+            </div>
+
+            <div class="space-y-2 text-xs font-mono">
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">➕</span>
+                  <span class="font-bold text-white font-sans">1. Arithmetic:</span>
+                </div>
+                <div class="text-teal-300 font-mono text-[11px]">+ &nbsp;- &nbsp;* &nbsp;/ &nbsp;// &nbsp;% &nbsp;**</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">⚖️</span>
+                  <span class="font-bold text-white font-sans">2. Comparison (Relational):</span>
+                </div>
+                <div class="text-amber-300 font-mono text-[11px]">== &nbsp;!= &nbsp;&gt; &nbsp;&lt; &nbsp;&gt;= &nbsp;&lt;=</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">📥</span>
+                  <span class="font-bold text-white font-sans">3. Assignment:</span>
+                </div>
+                <div class="text-cyan-300 font-mono text-[11px]">= &nbsp;+= &nbsp;-= &nbsp;*= &nbsp;/= &nbsp;//= &nbsp;%= &nbsp;**=</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">🧠</span>
+                  <span class="font-bold text-white font-sans">4. Logical:</span>
+                </div>
+                <div class="text-rose-300 font-mono text-[11px]">and &nbsp;&nbsp;or &nbsp;&nbsp;not</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">⚡</span>
+                  <span class="font-bold text-white font-sans">5. Bitwise:</span>
+                </div>
+                <div class="text-purple-300 font-mono text-[11px]">&amp; &nbsp;| &nbsp;^ &nbsp;~ &nbsp;&lt;&lt; &nbsp;&gt;&gt;</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">🔍</span>
+                  <span class="font-bold text-white font-sans">6. Membership:</span>
+                </div>
+                <div class="text-emerald-300 font-mono text-[11px]">in &nbsp;&nbsp;not in</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-sm">🆔</span>
+                  <span class="font-bold text-white font-sans">7. Identity:</span>
+                </div>
+                <div class="text-blue-300 font-mono text-[11px]">is &nbsp;&nbsp;is not</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 14: ARITHMETIC OPERATORS ==================== -->
+    <div id="slide-14" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/20 text-brand-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 14</span><span>&bull;</span><span>Calculations</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Arithmetic Operators: <br>
+            <span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Doing Math in Python</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-teal-500/30">1</div>
+              <p><strong class="text-white">Standard Operations:</strong> Addition (<code class="text-teal-300 font-mono">+</code>), Subtraction (<code class="text-teal-300 font-mono">-</code>), and Multiplication (<code class="text-teal-300 font-mono">*</code>) behave just like a standard calculator.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-teal-500/30">2</div>
+              <p><strong class="text-white">The Division Difference:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-emerald-300 font-mono font-bold">/</code> (True Division): Always gives a decimal float (<code class="text-white">10 / 2 = 5.0</code>).</li>
+                  <li><code class="text-amber-300 font-mono font-bold">//</code> (Floor Division): Divides and <strong>rounds down</strong> to the nearest whole number (<code class="text-white">10 // 3 = 3</code>).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-teal-500/30">3</div>
+              <p><strong class="text-white">Modulus (<code class="text-purple-300 font-mono">%</code>) & Power (<code class="text-purple-300 font-mono">**</code>):</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-purple-300 font-mono font-bold">%</code> returns the <strong>remainder</strong>: <code class="text-white">10 % 3 = 1</code>. (Used to check even/odd numbers!).</li>
+                  <li><code class="text-purple-300 font-mono font-bold">**</code> calculates exponents: <code class="text-white">2 ** 3 = 8</code> (2 to the power 3).</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-3 font-mono text-xs">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              Arithmetic Cheat Sheet
+            </div>
+
+            <!-- Click-to-reveal prediction moment -->
+            <details class="quick-check p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs">
+              <summary class="text-amber-300 font-semibold font-sans flex items-center gap-2">
+                <span class="chevron">▸</span> ⏸️ Pause & Predict: <span class="font-mono">17 // 5</span> = ? &nbsp; <span class="font-mono">17 % 5</span> = ? &nbsp; <span class="font-mono">2 ** 4</span> = ?
+              </summary>
+              <div class="mt-2 pl-5 text-gray-300 font-mono">17 // 5 = 3 &nbsp;|&nbsp; 17 % 5 = 2 &nbsp;|&nbsp; 2 ** 4 = 16</div>
+            </details>
+
+            <div class="overflow-x-auto" id="table-arithmetic">
+              <!-- Dynamically populated by opTable(arithmeticOps) -->
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans space-y-1">
+              <div>💡 <strong>Pro Tip:</strong> Any number <code class="text-purple-300 font-mono">num % 2 == 0</code> is <strong>Even</strong>; otherwise, it is <strong>Odd</strong>!</div>
+              <div>⚠️ <strong>Floor gotcha:</strong> <code class="font-mono">//</code> rounds <em>down</em>, even for negatives: <code class="font-mono text-white">-7 // 2 = -4</code> (not -3!)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 15: RELATIONAL / COMPARISON OPERATORS ==================== -->
+    <div id="slide-15" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 15</span><span>&bull;</span><span>Comparisons</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Comparison Operators: <br>
+            <span class="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Asking Yes/No Questions</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">1</div>
+              <p><strong class="text-white">Always Return Booleans:</strong> Relational operators compare two values and <em>always</em> evaluate to either <code class="text-emerald-400 font-mono font-bold">True</code> or <code class="text-rose-400 font-mono font-bold">False</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">2</div>
+              <p><strong class="text-white">Equal To (<code class="text-amber-300 font-mono">==</code>) vs Assignment (<code class="text-cyan-300 font-mono">=</code>):</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-cyan-300 font-mono">=</code> (Single equals): <strong>Stores</strong> a value into a variable (<code class="text-white">x = 5</code>).</li>
+                  <li><code class="text-amber-300 font-mono">==</code> (Double equals): <strong>Tests equality</strong>: <code class="text-white">5 == 5</code> is <strong class="text-emerald-400">True</strong>, but <code class="text-white">5 == 3</code> is <strong class="text-rose-400">False</strong>.</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">3</div>
+              <p><strong class="text-white">Not Equal To (<code class="text-amber-300 font-mono">!=</code>):</strong>
+                Reads as "not-equal" — it asks <em>"Are these two values DIFFERENT?"</em> (Python's own word for flipping truth values is <code class="text-rose-300 font-mono">not</code> — next slide!)
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-white">5 != 2</code> is <strong class="text-emerald-400">True</strong> (they differ), while <code class="text-white">5 != 5</code> is <strong class="text-rose-400">False</strong> (they match).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">4</div>
+              <p><strong class="text-white">Real-Life Application:</strong> <code class="text-teal-300 font-mono">age &gt;= 18</code> (Voting), <code class="text-teal-300 font-mono">total &gt; 50</code> (Free shipping), <code class="text-teal-300 font-mono">role != "banned"</code> (Access).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-3 font-mono text-xs">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              Relational Operators Reference
+            </div>
+
+            <div class="overflow-x-auto" id="table-relational">
+              <!-- Dynamically populated by opTable(relationalOps) -->
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans space-y-1">
+              <div>💡 <strong>Type Trap:</strong> <code class="text-amber-300 font-mono">"5" == 5</code> evaluates to <strong class="text-rose-400 font-mono">False</strong> because a text string is not a number!</div>
+              <div>⌨️ <strong>How to Type:</strong> <code class="text-emerald-400 font-mono">!=</code> is typed as <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">!</kbd> (Shift + 1) followed by <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">=</kbd>.</div>
+              <div>❓ <strong>Why not &lt;&gt;?</strong> In SQL, Excel, and legacy Python 2, <code class="text-gray-300 font-mono">&lt;&gt;</code> was used. In modern <strong>Python 3</strong>, <code class="text-rose-400 font-mono">&lt;&gt;</code> was removed and raises a <strong class="text-rose-400">SyntaxError</strong>. Modern Python strictly uses <code class="text-emerald-400 font-mono">!=</code>.</div>
+              <div>⚠️ <strong>Caution:</strong> Never write <code class="text-rose-400 font-mono">if age = 18</code>! That causes a <strong class="text-rose-400">SyntaxError</strong>. Always use <code class="text-emerald-400 font-mono">==</code> to check equality.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 16: LOGICAL OPERATORS ==================== -->
+    <div id="slide-16" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 16</span><span>&bull;</span><span>Decision Logic</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Logical Operators: <br>
+            <span class="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">Combining Conditions</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">1</div>
+              <p><strong class="text-white">Connecting Multiple Truths:</strong> Often, one comparison is not enough. You need to verify multiple conditions at once before making a decision.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">2</div>
+              <p><strong class="text-white">The Three Core Logical Words:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1.5 text-sm text-gray-400">
+                  <li><code class="text-amber-300 font-mono font-bold">and</code>: Returns <strong class="text-emerald-400">True</strong> only if <strong>BOTH</strong> conditions are True.</li>
+                  <li><code class="text-cyan-300 font-mono font-bold">or</code>: Returns <strong class="text-emerald-400">True</strong> if <strong>AT LEAST ONE</strong> condition is True.</li>
+                  <li><code class="text-rose-300 font-mono font-bold">not</code>: <strong>Flips / Inverts</strong> the truth value (<code class="text-white">not True</code> becomes <code class="text-rose-400">False</code>).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-rose-500/30">3</div>
+              <p><strong class="text-white">Real-Life App Decisions:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li>Ride Rollercoaster: <code class="text-teal-300 font-mono">height &gt;= 120 and age &gt;= 10</code></li>
+                  <li>Discount Day: <code class="text-teal-300 font-mono">is_student or is_senior</code></li>
+                  <li>Access Allowed: <code class="text-teal-300 font-mono">not is_account_suspended</code></li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Truth table + worked examples -->
+        <div class="lg:col-span-6 space-y-3">
+          <div class="glass-card rounded-2xl p-5 space-y-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              The Truth Tables
+            </div>
+            <div class="overflow-x-auto" id="table-logical">
+              <!-- Dynamically populated by truthTable(logicalTruthTable) -->
+            </div>
+            <div class="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30 text-xs font-mono text-gray-300">
+              <span class="text-rose-300 font-bold">not</span> simply inverts: <span class="text-emerald-400 font-bold">not True → False</span> &nbsp;|&nbsp; <span class="text-emerald-400 font-bold">not False → True</span>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-2xl p-5 space-y-2.5 font-mono text-xs">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans mb-1">
+              Worked Examples in Action
+            </div>
+            <pre class="py-code" data-title="1. Both Conditions Must Pass (and)">age = 20
+has_license = True
+can_drive = (age >= 18) and has_license  # Result: True</pre>
+            <pre class="py-code" data-title="2. Truth Inverter (not)">is_raining = True
+go_outside = not is_raining  # Result: False</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 17: ASSIGNMENT OPERATORS ==================== -->
+    <div id="slide-17" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 17</span><span>&bull;</span><span>Variable Updating</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Assignment Operators: <br>
+            <span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Storing & Updating Data</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Foundation (<code class="text-cyan-300 font-mono">=</code>):</strong> Assigns whatever is evaluated on the right-hand side into the variable container on the left (<code class="text-white font-mono">score = 10</code>).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Compound / Augmented Assignment:</strong> In programming, we frequently update a variable based on its existing value (e.g. <code class="text-white font-mono">score = score + 5</code>). Python provides a clean shortcut: <code class="text-teal-300 font-mono">score += 5</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Every Arithmetic Operator Has a Twin:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-teal-300 font-mono">+=</code>, <code class="text-teal-300 font-mono">-=</code>, <code class="text-teal-300 font-mono">*=</code>, <code class="text-teal-300 font-mono">/=</code></li>
+                  <li><code class="text-amber-300 font-mono">//=</code> (floor divide), <code class="text-purple-300 font-mono">%=</code> (remainder), <code class="text-rose-300 font-mono">**=</code> (power)</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-3 font-mono text-xs">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              Compound Assignment Reference (Initial x = 10)
+            </div>
+
+            <div class="overflow-x-auto" id="table-assignment">
+              <!-- Dynamically populated by opTable(assignmentOps) -->
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans">
+              💡 <strong>Why use them?</strong> It prevents bugs from misspelling long variable names twice (e.g. <code class="text-teal-300 font-mono">user_total_score += 10</code>).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 18: MEMBERSHIP & IDENTITY ==================== -->
+    <div id="slide-18" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 18</span><span>&bull;</span><span>Special Operations</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Membership & Identity: <br>
+            <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Presence & Memory Check</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-purple-500/30">1</div>
+              <p><strong class="text-white">Membership (<code class="text-emerald-300 font-mono">in</code>, <code class="text-rose-300 font-mono">not in</code>):</strong> Tests whether a value or letter exists inside a collection or sequence (like text, lists, tuples).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-purple-500/30">2</div>
+              <p><strong class="text-white">Identity (<code class="text-cyan-300 font-mono">is</code>, <code class="text-amber-300 font-mono">is not</code>):</strong> Checks if two variables refer to the <strong>exact same object in computer memory (RAM)</strong>, not just equal values.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-purple-500/30">3</div>
+              <p><strong class="text-white">The Crucial Difference (<code class="text-yellow-300 font-mono">==</code> vs <code class="text-cyan-300 font-mono">is</code>):</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-yellow-300 font-mono">==</code>: Do they look identical? (Value Equality)</li>
+                  <li><code class="text-cyan-300 font-mono">is</code>: Are they the same physical address in RAM? (Identity)</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-3 font-mono text-xs">
+          <div class="glass-card rounded-2xl p-5 space-y-2.5">
+            <div class="flex justify-between items-center font-sans text-xs">
+              <span class="text-emerald-400 font-bold uppercase tracking-wider">Membership: in / not in</span>
+              <span class="text-[10px] text-gray-500">Checking sequences</span>
+            </div>
+            <pre class="py-code"># Check substring:
+"chai" in "masala chai"             # Result: True
+
+# Check item not in list:
+"admin" not in ["guest", "editor"]  # Result: True</pre>
+          </div>
+
+          <div class="glass-card rounded-2xl p-5 space-y-2.5">
+            <div class="flex justify-between items-center font-sans text-xs">
+              <span class="text-cyan-400 font-bold uppercase tracking-wider">Identity: is / is not (RAM Check)</span>
+              <span class="text-[10px] text-gray-500">Memory address</span>
+            </div>
+            <pre class="py-code">list1 = [1, 2, 3]
+list2 = [1, 2, 3]
+list1 == list2  # True  (values look identical)
+list1 is list2  # False (two distinct boxes in RAM!)</pre>
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans">
+              💡 <strong>Pro Tip:</strong> Use <code class="text-cyan-300 font-mono">x is None</code> to check whether a variable was <strong>never set</strong> (holds <code class="font-mono">None</code>) — not to test for empty values!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 19: EXPRESSIONS ==================== -->
+    <div id="slide-19" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 19</span><span>&bull;</span><span>Code Foundations</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Expressions: <br>
+            <span class="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Producing Values in Code</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">1</div>
+              <p><strong class="text-white">What is an Expression?</strong> An expression is any piece of code that the Python interpreter evaluates to <strong>produce a value</strong> (the value might even be <code class="text-amber-300 font-mono">None</code>).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">2</div>
+              <p><strong class="text-white">The Assignment Test:</strong> An expression is <strong>anything that can sit on the right-hand side of an assignment operator (<code class="text-cyan-300 font-mono">=</code>)</strong>!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">3</div>
+              <p><strong class="text-white">Expressions Nest Within Expressions:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-teal-300 font-mono">(7 - 3) * 0.5</code> → Produces <code class="text-white font-mono">2.0</code></li>
+                  <li><code class="text-teal-300 font-mono">(7 - 3)</code> → Produces <code class="text-white font-mono">4</code></li>
+                  <li><code class="text-teal-300 font-mono">7</code> → A single literal number is an expression!</li>
+                </ul>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4 font-mono text-xs">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              The "Right-Hand Side" Golden Rule
+            </div>
+
+            <div class="p-4 rounded-xl bg-black/60 border border-white/10 text-center space-y-2">
+              <div class="text-lg text-white font-bold">
+                <span class="text-cyan-400">variable</span> <span class="text-rose-400">=</span> <span class="text-emerald-400 underline decoration-emerald-500/50 underline-offset-4">&lt;EXPRESSION&gt;</span>
+              </div>
+              <div class="text-xs text-gray-400 font-sans">If Python can compute it into a value to store, it is an expression!</div>
+            </div>
+
+            <div class="space-y-2">
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-cyan-300">result</span> = <span class="text-emerald-300 font-bold">(7 - 3) * 0.5</span></div>
+                <span class="text-[11px] text-gray-400">Produces 2.0</span>
+              </div>
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-cyan-300">result</span> = <span class="text-emerald-300 font-bold">(7 - 3)</span></div>
+                <span class="text-[11px] text-gray-400">Produces 4</span>
+              </div>
+              <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-cyan-300">result</span> = <span class="text-emerald-300 font-bold">7</span></div>
+                <span class="text-[11px] text-gray-400">Produces 7</span>
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans">
+              🎯 <strong>Summary:</strong> Expressions compute; values are born. Software runs by continuously evaluating expressions!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 20: EXPRESSION TYPES & ANATOMY ==================== -->
+    <div id="slide-20" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 20</span><span>&bull;</span><span>Building Expressions</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Anatomy of Expressions: <br>
+            <span class="bg-gradient-to-r from-blue-400 to-teal-300 bg-clip-text text-transparent">Types & Building Blocks</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-blue-500/30">1</div>
+              <p><strong class="text-white">The 4 Building Blocks:</strong> Every expression is built by combining:
+                <span class="text-teal-300 font-mono">Variables</span>, <span class="text-purple-300 font-mono">Values (Literals)</span>, <span class="text-rose-300 font-mono">Operators</span>, and <span class="text-amber-300 font-mono">Functions</span>.
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-blue-500/30">2</div>
+              <p><strong class="text-white">Expression vs. Statement:</strong>
+                <ul class="list-disc pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><code class="text-teal-300 font-mono">x = 5 + 3</code> contains an <strong>Expression</strong> (<code class="text-white">5 + 3</code> produces 8).</li>
+                  <li><code class="text-amber-300 font-mono">print(x)</code> is a <strong>Statement</strong> (executes an action on screen).</li>
+                </ul>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-blue-500/30">3</div>
+              <p><strong class="text-white">Functions inside Expressions:</strong> Function calls like <code class="text-cyan-300 font-mono">round(3.5)</code> or relational checks like <code class="text-cyan-300 font-mono">x == 1</code> are full valid expressions!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-2.5 font-mono text-xs">
+          <div class="glass-card rounded-2xl p-5 space-y-2.5">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              4 Common Expression Types in Python
+            </div>
+
+            <pre class="py-code" data-title="1. Arithmetic Expression (Produces Number)">x = (3 + 2) * 5  # Evaluates to 25</pre>
+            <pre class="py-code" data-title="2. Logical Expression (Produces Boolean)">is_valid = (x > 10 and x < 30)  # True or False</pre>
+            <pre class="py-code" data-title="3. String Expression (Produces Text)">message = "Hello, " + "world!"  # Concatenation</pre>
+            <pre class="py-code" data-title="4. Conditional Expression (Produces Decision)">status = "Pass" if score >= 40 else "Fail"</pre>
+
+            <div class="p-2.5 rounded-lg bg-blue-950/30 border border-blue-500/30 text-xs text-blue-200 font-sans">
+              🔭 <strong>Preview:</strong> The <code class="font-mono">if ... else</code> inside the ternary is your first glimpse of decision-making — full treatment in Lecture 2!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 21: OPERATOR PRECEDENCE ==================== -->
+    <div id="slide-21" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 21</span><span>&bull;</span><span>Calculation Rules</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Operator Precedence: <br>
+            <span class="bg-gradient-to-r from-amber-400 to-yellow-300 bg-clip-text text-transparent">The Order of Operations</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">1</div>
+              <p><strong class="text-white">Who Goes First?</strong> When multiple operators appear in a single expression (e.g. <code class="text-amber-300 font-mono">2 + 3 * 4</code>), Python follows strict precedence rules (PEMDAS / BODMAS).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">2</div>
+              <p><strong class="text-white">The Precedence Hierarchy:</strong>
+                <ol class="list-decimal pl-5 mt-1 space-y-1 text-sm text-gray-400">
+                  <li><strong class="text-white">Parentheses <code class="text-amber-300 font-mono">( )</code>:</strong> Always first! (Highest priority)</li>
+                  <li><strong class="text-white">Exponentiation <code class="text-rose-300 font-mono">**</code>:</strong> Powers</li>
+                  <li><strong class="text-white">Multiplication & Division <code class="text-teal-300 font-mono">*</code>, <code class="text-teal-300 font-mono">/</code>, <code class="text-teal-300 font-mono">//</code>, <code class="text-teal-300 font-mono">%</code>:</strong> Left-to-right</li>
+                  <li><strong class="text-white">Addition & Subtraction <code class="text-cyan-300 font-mono">+</code>, <code class="text-cyan-300 font-mono">-</code>:</strong> Left-to-right</li>
+                  <li><strong class="text-white">Comparisons <code class="text-amber-300 font-mono">==</code>, <code class="text-amber-300 font-mono">&gt;=</code>, etc.:</strong> Evaluated next</li>
+                  <li><strong class="text-white">Logical Operators:</strong> <code class="text-purple-300 font-mono">not</code> → <code class="text-purple-300 font-mono">and</code> → <code class="text-purple-300 font-mono">or</code> (Lowest priority)</li>
+                </ol>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-amber-500/30">3</div>
+              <p><strong class="text-white">The Golden Rule:</strong> <em>When in doubt, use parentheses!</em> They remove all ambiguity for both Python and human readers.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4 font-mono text-xs">
+          <div class="glass-card rounded-2xl p-6 space-y-4">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              Step-by-Step Evaluation Example
+            </div>
+
+            <!-- Click-to-reveal prediction moment -->
+            <details class="quick-check p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs">
+              <summary class="text-amber-300 font-semibold font-sans flex items-center gap-2">
+                <span class="chevron">▸</span> ⏸️ Pause & Predict: what does <span class="font-mono">x</span> become below?
+              </summary>
+              <div class="mt-2 pl-5 text-gray-300 font-mono">x = 21.0 — and it's a float! (4 / 2 makes it so)</div>
+            </details>
+
+            <div class="p-3.5 rounded-xl bg-black/60 border border-white/10">
+              <div class="text-[10px] text-gray-500 uppercase font-sans">Original Expression:</div>
+              <div class="text-amber-300 text-sm font-bold mt-1">x = 5 + 2 * 3 ** 2 - (4 / 2)</div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div class="p-2.5 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-amber-400 font-bold font-sans">Step 1 (Parentheses):</span> (4 / 2) → 2.0</div>
+                <div class="text-gray-400">5 + 2 * 3 ** 2 - 2.0</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-rose-400 font-bold font-sans">Step 2 (Exponent):</span> 3 ** 2 → 9</div>
+                <div class="text-gray-400">5 + 2 * 9 - 2.0</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
+                <div><span class="text-teal-400 font-bold font-sans">Step 3 (Multiplication):</span> 2 * 9 → 18</div>
+                <div class="text-gray-400">5 + 18 - 2.0</div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between text-emerald-300 font-bold">
+                <div><span class="font-sans">Step 4 (Add & Subtract):</span> 5 + 18 - 2.0</div>
+                <div class="text-sm">Final Result: 21.0</div>
+              </div>
+            </div>
+
+            <div class="text-[11px] text-gray-500 font-sans leading-relaxed">
+              🔬 Bonus gotcha: <code class="font-mono">**</code> groups <strong>right-to-left</strong>, so <code class="font-mono text-gray-300">2 ** 3 ** 2 = 512</code> (not 64)!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 22: TYPE CONVERSION ==================== -->
+    <div id="slide-22" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 22</span><span>&bull;</span><span>Data Flexibility</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            Type Conversion: <br>
+            <span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Changing Data Types</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-base lg:text-lg">
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">1</div>
+              <p><strong class="text-white">Why Convert Types?</strong> Python is strongly typed—it refuses to do incompatible actions (like <code class="text-rose-400 font-mono">"Score: " + 95</code> → <span class="text-rose-400 font-bold">TypeError</span>). We convert types to make them work together.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">2</div>
+              <p><strong class="text-white">Implicit Conversion (Automatic):</strong> Python automatically converts a smaller type to a wider type to prevent data loss:
+                <code class="text-cyan-300 font-mono block mt-1">5 + 2.5 → 7.5 (int automatically became float)</code>
+              </p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-emerald-500/30">3</div>
+              <p><strong class="text-white">Explicit Conversion (Type Casting):</strong> Manually convert data using Python's built-in type functions:
+                <code class="text-teal-300 font-mono">int()</code>, <code class="text-teal-300 font-mono">float()</code>, <code class="text-teal-300 font-mono">str()</code>, <code class="text-teal-300 font-mono">bool()</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4 font-mono text-xs">
+          <div class="glass-card rounded-2xl p-6 space-y-3.5">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-sans">
+              Type Casting Functions in Action
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between">
+                <div><code class="text-teal-300 font-bold">int("42")</code> &nbsp;→&nbsp; <span class="text-white font-bold">42</span></div>
+                <span class="text-[11px] text-gray-400 font-sans">String to Integer</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between">
+                <div><code class="text-cyan-300 font-bold">float("3.14")</code> &nbsp;→&nbsp; <span class="text-white font-bold">3.14</span></div>
+                <span class="text-[11px] text-gray-400 font-sans">String to Float</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between">
+                <div><code class="text-purple-300 font-bold">str(95)</code> &nbsp;→&nbsp; <span class="text-white font-bold">"95"</span></div>
+                <span class="text-[11px] text-gray-400 font-sans">Integer to String</span>
+              </div>
+              <div class="p-3 rounded-xl bg-black/60 border border-white/10 flex items-center justify-between">
+                <div><code class="text-rose-300 font-bold">bool(1)</code> &nbsp;→&nbsp; <span class="text-emerald-400 font-bold">True</span> &nbsp;|&nbsp; <code class="text-rose-300 font-bold">bool(0)</code> &nbsp;→&nbsp; <span class="text-rose-400 font-bold">False</span></div>
+                <span class="text-[11px] text-gray-400 font-sans">Truthy / Falsy</span>
+              </div>
+            </div>
+
+            <!-- A REAL traceback — making "errors are normal" concrete -->
+            <div class="p-3 rounded-xl bg-black/80 border border-rose-500/30 space-y-1">
+              <div class="text-[10px] uppercase text-rose-400 font-sans font-bold">A real error in the wild (totally normal!):</div>
+              <pre class="font-mono text-[11px] text-rose-300 whitespace-pre-wrap leading-relaxed">>>> "Score: " + 95
+TypeError: can only concatenate str (not "int") to str</pre>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs text-gray-400 font-sans space-y-1">
+              <div>⚠️ <strong>Common Pitfall:</strong> <code class="text-rose-400 font-mono">int("hello")</code> raises a <strong class="text-rose-400">ValueError</strong> — no digits to convert!</div>
+              <div>⚠️ <strong>Sneaky one:</strong> <code class="text-rose-400 font-mono">int("3.14")</code> <em>also</em> fails — use <code class="text-emerald-400 font-mono">float("3.14")</code> first, then <code class="font-mono">int()</code> if needed.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 23: RECAP & WHAT'S NEXT (NEW) ==================== -->
+    <div id="slide-23" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-7 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 23</span><span>&bull;</span><span>Wrap-Up</span>
+          </div>
+
+          <h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight">
+            You Now Think Like a <span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Programmer</span>
+          </h2>
+
+          <div class="glass-card rounded-2xl p-6 space-y-2.5">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              ✅ What You Learned Today
+            </div>
+            <ul class="space-y-2 text-sm text-gray-300">
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> A program is a precise, ordered recipe — and computers have zero common sense</li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> Machines speak binary; high-level languages + translators bridge the gap</li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> <code class="font-mono text-emerald-300">print()</code> talks, <code class="font-mono text-violet-300">input()</code> listens (and always returns a string!)</li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> Variables are labeled containers with types: <code class="font-mono text-amber-300">int</code>, <code class="font-mono text-purple-300">float</code>, <code class="font-mono text-emerald-300">str</code>, <code class="font-mono text-rose-300">bool</code></li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> Operators do math, compare, and combine logic (<code class="font-mono">+ - * / // % **</code>, <code class="font-mono">== !=</code>, <code class="font-mono">and or not</code>)</li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> Expressions produce values; precedence (PEMDAS) decides the order</li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400 font-bold">✔</span> Type conversion (<code class="font-mono">int()</code>, <code class="font-mono">float()</code>, <code class="font-mono">str()</code>) makes types cooperate</li>
+            </ul>
+          </div>
+
+          <details class="quick-check p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-sm">
+            <summary class="text-amber-300 font-semibold flex items-center gap-2">
+              <span class="chevron">▸</span> 🏁 Exit Quiz: <span class="font-mono text-xs">"5" + "5"</span> = ? &nbsp; <span class="font-mono text-xs">10 // 3</span> = ? &nbsp; <span class="font-mono text-xs">not True</span> = ? &nbsp; <span class="font-mono text-xs">"5" == 5</span> = ?
+            </summary>
+            <div class="mt-2 pl-5 text-gray-300 font-mono text-xs">"55" &nbsp;|&nbsp; 3 &nbsp;|&nbsp; False &nbsp;|&nbsp; False</div>
+          </details>
+        </div>
+
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass-card rounded-2xl p-6 space-y-3">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              🚀 Coming in Lecture 2
+            </div>
+            <ul class="space-y-2 text-sm text-gray-300">
+              <li class="flex items-start gap-2.5"><span class="text-brand-400">→</span> <span><strong class="text-white">if / elif / else</strong>: teaching programs to make decisions</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-brand-400">→</span> <span><strong class="text-white">Loops</strong>: repeating work without copy-paste</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-brand-400">→</span> <span><strong class="text-white">Functions</strong>: packaging recipes for reuse</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-brand-400">→</span> <span>Your first real <strong class="text-white">mini-project</strong>!</span></li>
+            </ul>
+          </div>
+
+          <div class="glass-card rounded-2xl p-6 space-y-2.5">
+            <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              🏠 Homework Challenge
+            </div>
+            <p class="text-sm text-gray-300">Build a <strong class="text-white">receipt calculator</strong>: ask for an item's price and quantity with <code class="font-mono text-violet-300">input()</code>, convert them with <code class="font-mono text-teal-300">float()</code> / <code class="font-mono text-teal-300">int()</code>, compute the total, and print a formatted receipt using an f-string.</p>
+            <p class="text-[11px] text-gray-500">Everything you need is on today's slides. Expect errors — fixing them <em>is</em> the learning.</p>
+          </div>
+
+          <div class="text-center text-sm italic text-gray-400 px-4">
+            "Errors are not failures — they're the machine talking back to you." 🐍
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <footer class="relative z-20 px-8 py-4 flex items-center justify-between border-t border-white/5 bg-darkBg/80 backdrop-blur-md">
+    <div class="absolute top-0 left-0 h-[2px] bg-gradient-to-r from-brand-500 via-cyan-400 to-pyYellow transition-all duration-300" id="progress-bar" style="width: 4.35%;"></div>
+
+    <div class="flex items-center space-x-2 text-xs text-gray-400 flex-wrap gap-y-1">
+      <span class="hidden md:inline">Navigation:</span>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">←</kbd>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">→</kbd>
+      <span class="text-gray-600">|</span>
+      <span class="hidden md:inline">Notes:</span>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">N</kbd>
+      <span class="hidden md:inline">Grid:</span>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">G</kbd>
+      <span class="hidden md:inline">Fullscreen:</span>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">F</kbd>
+      <span class="hidden md:inline">Close:</span>
+      <kbd class="px-2 py-1 rounded bg-white/5 border border-white/10 font-mono text-[11px] text-gray-300">Esc</kbd>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <button id="btn-prev" onclick="prevSlide()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-gray-300 transition flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Previous
+      </button>
+      <button id="btn-next" onclick="nextSlide()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-brand-500 to-cyan-500 hover:from-brand-400 hover:to-cyan-400 text-darkBg text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-brand-500/20 disabled:opacity-30 disabled:cursor-not-allowed">
+        Next
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </footer>
+
+  <!-- ==================== SPEAKER NOTES TELEPROMPTER ==================== -->
+  <div id="notes-modal" class="closed fixed inset-y-0 right-0 w-full max-w-md bg-gray-950/95 border-l border-white/10 shadow-2xl z-50 p-6 flex flex-col justify-between backdrop-blur-xl" role="dialog" aria-modal="true" aria-label="Presenter notes" aria-hidden="true">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Presenter Notes</h3>
+        </div>
+        <button onclick="toggleNotesModal()" aria-label="Close presenter notes" class="text-gray-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="text-xs font-mono text-brand-400" id="notes-slide-title">Slide 1: What is a Program?</div>
+
+      <div id="notes-content" class="text-xs text-gray-300 space-y-3 leading-relaxed overflow-y-auto max-h-[70vh] pr-2"></div>
+    </div>
+
+    <div class="pt-4 border-t border-white/10 text-[11px] text-gray-500 flex justify-between">
+      <span>Press <kbd class="font-mono text-gray-400 bg-white/5 px-1 py-0.5 rounded">N</kbd> to dismiss</span>
+      <span class="text-brand-400 font-mono">Usizo Presenter Mode</span>
+    </div>
+  </div>
+
+  <!-- ==================== OVERVIEW / GRID MODAL ==================== -->
+  <div id="overview-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex flex-col p-8 overflow-y-auto" role="dialog" aria-modal="true" aria-label="Lecture overview" aria-hidden="true">
+    <div class="flex items-center justify-between max-w-6xl mx-auto w-full mb-6">
+      <h3 class="text-lg font-bold text-white">Lecture Overview &bull; Jump to Slide</h3>
+      <button onclick="toggleOverviewModal()" aria-label="Close overview" class="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-sm">Close (Esc)</button>
+    </div>
+
+    <!-- 23 Slides Grid (keyboard accessible via data-slide + delegation) -->
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3.5 max-w-6xl mx-auto w-full">
+      <div data-slide="1" role="button" tabindex="0" aria-label="Go to slide 1: What is a Program?" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-brand-500/50 transition">
+        <div class="text-[10px] font-mono text-brand-400 mb-1">01 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-brand-400">What is a Program?</div>
+        <div class="text-[10px] text-gray-400 mt-1">Tea recipe analogy & instructions.</div>
+      </div>
+      <div data-slide="2" role="button" tabindex="0" aria-label="Go to slide 2: The 0 & 1 Barrier" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-amber-500/50 transition">
+        <div class="text-[10px] font-mono text-amber-400 mb-1">02 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-amber-400">The 0 & 1 Barrier</div>
+        <div class="text-[10px] text-gray-400 mt-1">Why computers only speak electrical binary.</div>
+      </div>
+      <div data-slide="3" role="button" tabindex="0" aria-label="Go to slide 3: High-Level Languages" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">03 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-400">High-Level Languages</div>
+        <div class="text-[10px] text-gray-400 mt-1">Bridging human logic and silicon wires.</div>
+      </div>
+      <div data-slide="4" role="button" tabindex="0" aria-label="Go to slide 4: Compilers & Interpreters" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-indigo-500/50 transition">
+        <div class="text-[10px] font-mono text-indigo-400 mb-1">04 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-indigo-400">Compilers & Interpreters</div>
+        <div class="text-[10px] text-gray-400 mt-1">Translating high-level code to machine code.</div>
+      </div>
+      <div data-slide="5" role="button" tabindex="0" aria-label="Go to slide 5: Python Origins & Basics" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-yellow-500/50 transition">
+        <div class="text-[10px] font-mono text-yellow-400 mb-1">05 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-yellow-400">Python Origins & Basics</div>
+        <div class="text-[10px] text-gray-400 mt-1">Guido van Rossum, Monty Python & philosophy.</div>
+      </div>
+      <div data-slide="6" role="button" tabindex="0" aria-label="Go to slide 6: The print() Function" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-emerald-400/50 transition">
+        <div class="text-[10px] font-mono text-emerald-400 mb-1">06 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-emerald-400">print() Function</div>
+        <div class="text-[10px] text-gray-400 mt-1">Syntax, escape sequences (\n, \t) & f-strings.</div>
+      </div>
+      <div data-slide="7" role="button" tabindex="0" aria-label="Go to slide 7: Variables" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-amber-400/50 transition">
+        <div class="text-[10px] font-mono text-amber-400 mb-1">07 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-amber-400">Variables (Containers)</div>
+        <div class="text-[10px] text-gray-400 mt-1">Kitchen storage jars & memory assignment.</div>
+      </div>
+      <div data-slide="8" role="button" tabindex="0" aria-label="Go to slide 8: Naming Rules" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-rose-400/50 transition">
+        <div class="text-[10px] font-mono text-rose-400 mb-1">08 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-rose-400">Naming Rules</div>
+        <div class="text-[10px] text-gray-400 mt-1">Syntax rules, keywords & snake_case style.</div>
+      </div>
+      <div data-slide="9" role="button" tabindex="0" aria-label="Go to slide 9: Data Types" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-400/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">09 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-400">Data Types</div>
+        <div class="text-[10px] text-gray-400 mt-1">str, int, float & math vs text.</div>
+      </div>
+      <div data-slide="10" role="button" tabindex="0" aria-label="Go to slide 10: Booleans" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-rose-400/50 transition">
+        <div class="text-[10px] font-mono text-rose-400 mb-1">10 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-rose-400">Booleans (True/False)</div>
+        <div class="text-[10px] text-gray-400 mt-1">Real-life binary states (light, lock, login).</div>
+      </div>
+      <div data-slide="11" role="button" tabindex="0" aria-label="Go to slide 11: The input() Function" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-violet-400/50 transition">
+        <div class="text-[10px] font-mono text-violet-400 mb-1">11 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-violet-400">input() Function</div>
+        <div class="text-[10px] text-gray-400 mt-1">Listening to user & type casting int(input()).</div>
+      </div>
+      <div data-slide="12" role="button" tabindex="0" aria-label="Go to slide 12: Python Tokens" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-teal-400/50 transition">
+        <div class="text-[10px] font-mono text-teal-400 mb-1">12 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-teal-400">Python Tokens</div>
+        <div class="text-[10px] text-gray-400 mt-1">The 5 building blocks & mini-program.</div>
+      </div>
+      <div data-slide="13" role="button" tabindex="0" aria-label="Go to slide 13: Operator Families" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-400/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">13 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-400">Operator Families</div>
+        <div class="text-[10px] text-gray-400 mt-1">Overview of all 7 operator categories.</div>
+      </div>
+      <div data-slide="14" role="button" tabindex="0" aria-label="Go to slide 14: Arithmetic Operators" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-teal-400/50 transition">
+        <div class="text-[10px] font-mono text-teal-400 mb-1">14 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-teal-400">Arithmetic Operators</div>
+        <div class="text-[10px] text-gray-400 mt-1">+, -, *, /, // (floor), % (remainder), ** (power).</div>
+      </div>
+      <div data-slide="15" role="button" tabindex="0" aria-label="Go to slide 15: Relational Operators" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-amber-400/50 transition">
+        <div class="text-[10px] font-mono text-amber-400 mb-1">15 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-amber-400">Relational Operators</div>
+        <div class="text-[10px] text-gray-400 mt-1">==, !=, &gt;, &lt;, &gt;=, &lt;= and Boolean output.</div>
+      </div>
+      <div data-slide="16" role="button" tabindex="0" aria-label="Go to slide 16: Logical Operators" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-rose-400/50 transition">
+        <div class="text-[10px] font-mono text-rose-400 mb-1">16 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-rose-400">Logical Operators</div>
+        <div class="text-[10px] text-gray-400 mt-1">and, or, not & truth tables.</div>
+      </div>
+      <div data-slide="17" role="button" tabindex="0" aria-label="Go to slide 17: Assignment Operators" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-400/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">17 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-400">Assignment Operators</div>
+        <div class="text-[10px] text-gray-400 mt-1">=, +=, -=, *=, /=, //=, %=, **= updating.</div>
+      </div>
+      <div data-slide="18" role="button" tabindex="0" aria-label="Go to slide 18: Membership & Identity" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-purple-400/50 transition">
+        <div class="text-[10px] font-mono text-purple-400 mb-1">18 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-purple-400">Membership & Identity</div>
+        <div class="text-[10px] text-gray-400 mt-1">in, not in, is, is not (Value vs RAM address).</div>
+      </div>
+      <div data-slide="19" role="button" tabindex="0" aria-label="Go to slide 19: What is an Expression?" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-emerald-400/50 transition">
+        <div class="text-[10px] font-mono text-emerald-400 mb-1">19 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-emerald-400">What is an Expression?</div>
+        <div class="text-[10px] text-gray-400 mt-1">Value producer & right-hand side of =.</div>
+      </div>
+      <div data-slide="20" role="button" tabindex="0" aria-label="Go to slide 20: Expression Anatomy" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-blue-400/50 transition">
+        <div class="text-[10px] font-mono text-blue-400 mb-1">20 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-blue-400">Expression Anatomy</div>
+        <div class="text-[10px] text-gray-400 mt-1">Arithmetic, logical, string, ternary expressions.</div>
+      </div>
+      <div data-slide="21" role="button" tabindex="0" aria-label="Go to slide 21: Operator Precedence" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-amber-400/50 transition">
+        <div class="text-[10px] font-mono text-amber-400 mb-1">21 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-amber-400">Operator Precedence</div>
+        <div class="text-[10px] text-gray-400 mt-1">PEMDAS hierarchy & step-by-step evaluation.</div>
+      </div>
+      <div data-slide="22" role="button" tabindex="0" aria-label="Go to slide 22: Type Conversion" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-teal-400/50 transition">
+        <div class="text-[10px] font-mono text-teal-400 mb-1">22 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-teal-400">Type Conversion</div>
+        <div class="text-[10px] text-gray-400 mt-1">Implicit vs. explicit type casting (int, float, str, bool).</div>
+      </div>
+      <div data-slide="23" role="button" tabindex="0" aria-label="Go to slide 23: Recap & Next Steps" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-brand-400/50 transition">
+        <div class="text-[10px] font-mono text-brand-400 mb-1">23 / 23</div>
+        <div class="text-xs font-bold text-white group-hover:text-brand-400">Recap & Next Steps</div>
+        <div class="text-[10px] text-gray-400 mt-1">What you learned + Lecture 2 preview + homework.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CONTROLS & NOTES -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 23;
+    let lastFocused = null;
+
+    const speakerNotes = {
+      1: { title: "Slide 1: What is a Program?", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Demystify programming by connecting it to something everyone does daily: following a recipe.</p>
+        <p><strong>🗣️ Talking Points:</strong></p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Ask: <em>"Can anyone make tea without boiling water first?"</em> Order is mandatory.</li>
+          <li>A program is simply an ordered recipe written for a computer.</li>
+          <li>Computers have zero common sense — they execute strictly in order.</li>
+        </ul>`},
+      2: { title: "Slide 2: The Communication Barrier", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Explain why we can't simply speak English to a computer.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Human language is full of ambiguity, slang, and implied assumptions.</li>
+          <li>Transistors only know voltage states: <strong>0 (Off)</strong> and <strong>1 (On)</strong>.</li>
+          <li>Early programmers punched cards and flipped switches.</li>
+          <li>ChatGPT aside: modern AI converts words into numbers too.</li>
+        </ul>`},
+      3: { title: "Slide 3: High-Level Languages", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Show how high-level languages bridge the human/silicon gap.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>English-like keywords: <code>if</code>, <code>while</code>, <code>print</code>.</li>
+          <li>Point at the assembly vs. Python contrast — let the visual do the work.</li>
+          <li>Portability: same code, Intel/Mac/phone.</li>
+        </ul>`},
+      4: { title: "Slide 4: Compilers vs. Interpreters", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Contrast the two translation models with the book/live-interpreter analogy.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Compiler: whole book translated before publication → fast to read afterward.</li>
+          <li>Interpreter: live diplomatic translation → immediate feedback.</li>
+          <li>If a sharp student asks: CPython actually compiles to bytecode first — the fine print is on the slide.</li>
+        </ul>`},
+      5: { title: "Slide 5: Welcome to Python", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Motivate the language choice with history and credibility.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Guido van Rossum, 1991, named after Monty Python — not the snake.</li>
+          <li>Readability: code is read far more than it is written.</li>
+          <li>Runs AI, NASA, Netflix, Spotify.</li>
+        </ul>`},
+      6: { title: "Slide 6: The print() Function", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> First real output. Live-demo if you have a terminal.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ <strong>Interaction:</strong> type <code>prnt("hi")</code> on purpose → show the red NameError. "This is normal — you'll see it a thousand times."</li>
+          <li>Quotes matter; commas auto-space; <code>\\n</code> and <code>\\t</code> escape sequences.</li>
+          <li>The <code>name</code> in the f-string is a preview — next slide!</li>
+        </ul>`},
+      7: { title: "Slide 7: Variables", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Variables as labeled jars in RAM.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li><code>=</code> means "store the RIGHT side into the LEFT container" — not math equality.</li>
+          <li>Reassigning replaces the contents; the label stays.</li>
+          <li>Analogy exit plan: later in the course we'll see where "jars" breaks (references).</li>
+        </ul>`},
+      8: { title: "Slide 8: Naming Rules", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Legal vs. illegal names, plus style.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ Ask the class to vote on each name in the red column — why is it invalid?</li>
+          <li>Keywords are grammar (<code>while</code>, <code>class</code>); <code>print</code> is a built-in, not a keyword — legal but avoid.</li>
+          <li>snake_case is the convention.</li>
+        </ul>`},
+      9: { title: "Slide 9: Data Types", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Classify data; plant the number-vs-text trap.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ Predict: what is <code>"5" + "5"</code>? Answer: <code>"55"</code> — quotes glue text.</li>
+          <li>Live demo: <code>type(5)</code> and <code>type("5")</code> — self-discovery tool.</li>
+          <li>Dynamic typing: Python infers, but types still matter.</li>
+        </ul>`},
+      10: { title: "Slide 10: Booleans", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Two-state logic with real-world anchors.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Capitalized <code>True</code>/<code>False</code> — lowercase is an error.</li>
+          <li>Naming convention: <code>is_</code> prefix (<code>is_logged_in</code>).</li>
+          <li>Booleans are the currency of every comparison — next slides.</li>
+        </ul>`},
+      11: { title: "Slide 11: The input() Function", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Two-way conversation; the string golden rule.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Live demo: <code>input()</code> then <code>age + 1</code> → TypeError. Why? It's a string!</li>
+          <li>Fix: <code>int(input(...))</code> pattern.</li>
+          <li>⏸️ Ask: what happens if the user types "abc" into <code>int(input())</code>? (ValueError — normal!)</li>
+        </ul>`},
+      12: { title: "Slide 12: Python Tokens", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Grammar of code — dissect a real mini-program.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Walk the program line by line using the color legend.</li>
+          <li>Keywords = grammar; built-ins = tools (<code>print</code>, <code>int</code>, <code>input</code>).</li>
+          <li>Every line of Python you'll ever write is these tokens.</li>
+        </ul>`},
+      13: { title: "Slide 13: Operator Families", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Map of the territory — don't memorize, just orient.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>7 families exist; the Big Three run most everyday logic.</li>
+          <li>Bitwise/identity/membership get their moment today or next lecture.</li>
+        </ul>`},
+      14: { title: "Slide 14: Arithmetic Operators", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Math operators — with the division subtleties.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ <strong>Pause & Predict:</strong> open the amber box — 17 // 5, 17 % 5, 2 ** 4. Let them commit before revealing.</li>
+          <li><code>/</code> always floats; <code>//</code> rounds DOWN (even for negatives: -7 // 2 = -4).</li>
+          <li><code>%</code> even/odd trick: <code>num % 2 == 0</code>.</li>
+        </ul>`},
+      15: { title: "Slide 15: Relational Operators", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Comparisons produce Booleans; the = vs == trap.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Single <code>=</code> stores; double <code>==</code> tests. This bug will haunt them — inoculate now.</li>
+          <li>"5" == 5 is False: type matters, not just content.</li>
+          <li><code>!=</code> reads "not-equal"; the word for flipping is <code>not</code> — next slide.</li>
+        </ul>`},
+      16: { title: "Slide 16: Logical Operators", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Combine conditions with and/or/not.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ Cover the truth table rows and have the class call out each result.</li>
+          <li>and = strict; or = lenient; not = inverter.</li>
+          <li>Rollercoaster: height AND age; discount: student OR senior.</li>
+        </ul>`},
+      17: { title: "Slide 17: Assignment Operators", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Compact updates: <code>score += 5</code>.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Read <code>x += 5</code> aloud as "x becomes x plus 5."</li>
+          <li>Why they exist: long variable names typed twice = typo bugs.</li>
+          <li>Every arithmetic operator has a twin — including //=.</li>
+        </ul>`},
+      18: { title: "Slide 18: Membership & Identity", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> in/not in for presence; is/is not for memory identity.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>== asks "same value?"; is asks "same RAM box?"</li>
+          <li>Two identical lists: equal but NOT identical.</li>
+          <li>Practical rule: <code>is None</code> checks "never set" — not "empty."</li>
+        </ul>`},
+      19: { title: "Slide 19: What is an Expression?", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Expressions produce values.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>The RHS test: if it can sit right of <code>=</code>, it's an expression.</li>
+          <li>Even a bare literal <code>7</code> qualifies.</li>
+          <li>Nesting: inner expressions evaluate first.</li>
+        </ul>`},
+      20: { title: "Slide 20: Expression Anatomy", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> The 4 building blocks and 4 common types.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Expression = value producer; statement = action.</li>
+          <li>The ternary is a PREVIEW of if/else — Lecture 2. Don't deep-dive yet.</li>
+        </ul>`},
+      21: { title: "Slide 21: Operator Precedence", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> PEMDAS in Python; the parentheses habit.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ <strong>Pause & Predict:</strong> reveal the answer box only after the class commits. (Answer: 21.0 — the float trips people!)</li>
+          <li>Step through the reduction slowly — one operator per step.</li>
+          <li>Bonus: <code>**</code> groups right-to-left (2 ** 3 ** 2 = 512).</li>
+        </ul>`},
+      22: { title: "Slide 22: Type Conversion", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Strong typing forces conversion; casting toolkit.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>Show the real TypeError traceback — read it aloud, decode it together. Errors are data, not defeat.</li>
+          <li>Implicit: int + float → float. Explicit: int(), float(), str(), bool().</li>
+          <li>Traps: int("hello") and int("3.14") both fail.</li>
+        </ul>`},
+      23: { title: "Slide 23: Recap & Next Steps", notes: `
+        <p><strong>🎯 Teaching Goal:</strong> Consolidate, assess, and set up Lecture 2.</p>
+        <ul class="list-disc pl-4 space-y-1">
+          <li>⏸️ Run the exit quiz aloud — cold-call answers before revealing.</li>
+          <li>Assign the receipt-calculator homework (uses only today's tools).</li>
+          <li>Tease Lecture 2: if/else, loops, functions — decisions and repetition.</li>
+          <li>Close warm: they now read code; next they'll write logic.</li>
+        </ul>`}
+    };
+
+    function goToSlide(n) {
+      currentSlide = Math.min(Math.max(n, 1), totalSlides);
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('slide-' + currentSlide);
+      if (target) {
+        target.classList.add('active');
+        target.scrollTop = 0;
+      }
+      document.getElementById('current-slide-num').textContent = String(currentSlide).padStart(2, '0');
+      document.getElementById('progress-bar').style.width = (currentSlide / totalSlides * 100) + '%';
+      document.getElementById('btn-prev').disabled = currentSlide === 1;
+      document.getElementById('btn-next').disabled = currentSlide === totalSlides;
+      updateNotes();
+    }
+
+    function nextSlide() { goToSlide(currentSlide + 1); }
+    function prevSlide() { goToSlide(currentSlide - 1); }
+
+    function updateNotes() {
+      const note = speakerNotes[currentSlide];
+      if (note) {
+        document.getElementById('notes-slide-title').textContent = note.title;
+        document.getElementById('notes-content').innerHTML = note.notes;
+      }
+    }
+
+    function toggleNotesModal() {
+      const modal = document.getElementById('notes-modal');
+      const willOpen = modal.classList.contains('closed');
+      modal.classList.toggle('closed');
+      modal.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+      if (willOpen) {
+        lastFocused = document.activeElement;
+        modal.querySelector('button').focus();
+      } else if (lastFocused) {
+        lastFocused.focus();
+      }
+    }
+
+    function toggleOverviewModal() {
+      const modal = document.getElementById('overview-modal');
+      const willOpen = modal.classList.contains('hidden');
+      modal.classList.toggle('hidden');
+      modal.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+      if (willOpen) {
+        lastFocused = document.activeElement;
+        modal.querySelector('button').focus();
+      } else if (lastFocused) {
+        lastFocused.focus();
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Keyboard shortcuts: ← → Home End, N (notes), G (grid), F (fullscreen), Esc
+    document.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowRight': case 'PageDown': nextSlide(); break;
+        case 'ArrowLeft': case 'PageUp': prevSlide(); break;
+        case 'Home': goToSlide(1); break;
+        case 'End': goToSlide(totalSlides); break;
+        case 'n': case 'N': toggleNotesModal(); break;
+        case 'g': case 'G': toggleOverviewModal(); break;
+        case 'f': case 'F': toggleFullScreen(); break;
+        case 'Escape':
+          if (!document.getElementById('overview-modal').classList.contains('hidden')) toggleOverviewModal();
+          else if (!document.getElementById('notes-modal').classList.contains('closed')) toggleNotesModal();
+          break;
+      }
+    });
+
+    // Overview grid: delegated click + keyboard activation (Enter/Space)
+    document.querySelectorAll('[data-slide]').forEach(card => {
+      const activate = () => { goToSlide(parseInt(card.dataset.slide, 10)); toggleOverviewModal(); };
+      card.addEventListener('click', activate);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
+
+    // ============================================================================
+    // REUSABLE SYNTAX HIGHLIGHTER & CODE PANELS
+    // ============================================================================
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function pyHighlight(code) {
+      // Single-pass tokenizer avoids recursive regex tag replacements
+      const tokenRegex = /(#.*$)|(".*?"|'.*?'|f".*?"|f'.*?')|(\b\d+\.?\d*\b)|(\b(?:print|input|int|float|str|bool|type|len|round)\b(?=\s*\())|(\b(?:True|False|None|and|or|not|in|is|if|else|elif|def|return)\b)/gm;
+
+      return escapeHtml(code).replace(tokenRegex, (match, comment, string, number, func, keyword) => {
+        if (comment) return `<span class="tok-com">${comment}</span>`;
+        if (string)  return `<span class="tok-str">${string}</span>`;
+        if (number)  return `<span class="tok-num">${number}</span>`;
+        if (func)    return `<span class="tok-fn">${func}</span>`;
+        if (keyword) return `<span class="tok-kw">${keyword}</span>`;
+        return match;
+      });
+    }
+
+    function codePanel(code, title = '') {
+      const header = title ? `<div class="text-gray-400 text-[10px] uppercase font-sans tracking-wider mb-1.5 font-semibold">${title}</div>` : '';
+      return `<pre class="code-panel">${header}<code>${pyHighlight(code)}</code></pre>`;
+    }
+
+    function renderCodePanels() {
+      document.querySelectorAll('pre.py-code').forEach(el => {
+        const raw = el.dataset.code || el.textContent;
+        const title = el.dataset.title || '';
+        el.outerHTML = codePanel(raw.trim(), title);
+      });
+    }
+
+    // ============================================================================
+    // DATA-DRIVEN CHEAT-SHEET TABLES
+    // ============================================================================
+    const arithmeticOps = [
+      { op: '+',  meaning: 'Addition',            example: '5 + 2',   result: '7' },
+      { op: '-',  meaning: 'Subtraction',         example: '5 - 2',   result: '3' },
+      { op: '*',  meaning: 'Multiplication',      example: '5 * 2',   result: '10' },
+      { op: '/',  meaning: 'True Division',       example: '7 / 2',   result: '3.5', note: 'float' },
+      { op: '//', meaning: 'Floor Division',      example: '7 // 2',  result: '3',   note: 'int' },
+      { op: '%',  meaning: 'Modulus (Remainder)', example: '7 % 2',   result: '1' },
+      { op: '**', meaning: 'Exponent (Power)',    example: '2 ** 3',  result: '8' }
+    ];
+
+    const relationalOps = [
+      { op: '==', meaning: 'Equal to',                 example: '5 == 5 &nbsp;|&nbsp; 5 == 2', result: '<span class="text-emerald-400 font-bold">True</span> &nbsp;|&nbsp; <span class="text-rose-400 font-bold">False</span>' },
+      { op: '!=', meaning: 'Not equal to',             example: '5 != 2 &nbsp;|&nbsp; 5 != 5', result: '<span class="text-emerald-400 font-bold">True</span> &nbsp;|&nbsp; <span class="text-rose-400 font-bold">False</span>' },
+      { op: '>',  meaning: 'Greater than',             example: '10 > 20',                     result: '<span class="text-rose-400 font-bold">False</span>' },
+      { op: '<',  meaning: 'Less than',                example: '10 < 20',                     result: '<span class="text-emerald-400 font-bold">True</span>' },
+      { op: '>=', meaning: 'Greater than or equal to', example: '18 >= 18',                    result: '<span class="text-emerald-400 font-bold">True</span>' },
+      { op: '<=', meaning: 'Less than or equal to',    example: '25 <= 20',                    result: '<span class="text-rose-400 font-bold">False</span>' }
+    ];
+
+    const logicalTruthTable = [
+      { a: 'True',  b: 'True',  andRes: 'True',  orRes: 'True' },
+      { a: 'True',  b: 'False', andRes: 'False', orRes: 'True' },
+      { a: 'False', b: 'True',  andRes: 'False', orRes: 'True' },
+      { a: 'False', b: 'False', andRes: 'False', orRes: 'False' }
+    ];
+
+    const assignmentOps = [
+      { op: '=',   meaning: 'Assignment',        example: 'x = 5',  equiv: 'x = 5',      result: '5' },
+      { op: '+=',  meaning: 'Add & Assign',       example: 'x += 5', equiv: 'x = x + 5',  result: '15' },
+      { op: '-=',  meaning: 'Subtract & Assign',  example: 'x -= 3', equiv: 'x = x - 3',  result: '7' },
+      { op: '*=',  meaning: 'Multiply & Assign',  example: 'x *= 2', equiv: 'x = x * 2',  result: '20' },
+      { op: '/=',  meaning: 'Divide & Assign',    example: 'x /= 2', equiv: 'x = x / 2',  result: '5.0' },
+      { op: '//=', meaning: 'Floor Div & Assign', example: 'x //= 4', equiv: 'x = x // 4', result: '2' },
+      { op: '%=',  meaning: 'Modulo & Assign',    example: 'x %= 4', equiv: 'x = x % 4',  result: '2' },
+      { op: '**=', meaning: 'Exponent & Assign',  example: 'x **= 2', equiv: 'x = x ** 2', result: '100' }
+    ];
+
+    function opTable(ops, options = {}) {
+      const headers = options.headers || ['Operator', 'Meaning', 'Example', 'Result'];
+      const hasEquiv = options.hasEquiv || false;
+
+      return `<table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-white/10 text-gray-400 text-[11px] font-sans">
+            <th scope="col" class="py-2 font-semibold">${headers[0]}</th>
+            <th scope="col" class="py-2 font-semibold">${headers[1]}</th>
+            ${hasEquiv ? `<th scope="col" class="py-2 font-semibold">${headers[2]}</th>` : ''}
+            ${!hasEquiv && headers.length === 4 ? `<th scope="col" class="py-2 font-semibold">${headers[2]}</th>` : ''}
+            <th scope="col" class="py-2 text-right font-semibold">${headers[headers.length - 1]}</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5 text-gray-300 text-xs font-mono">
+          ${ops.map(o => `
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-2 font-bold text-teal-300">${o.op}</td>
+              <td class="py-2 font-sans text-gray-300">${o.meaning || o.example}</td>
+              ${hasEquiv ? `<td class="py-2 text-gray-300">${o.equiv}</td>` : ''}
+              ${!hasEquiv && headers.length === 4 ? `<td class="py-2 text-gray-300">${o.example}</td>` : ''}
+              <td class="py-2 text-right font-bold text-white">
+                ${o.result}
+                ${o.note ? `<span class="text-[10px] text-gray-500 font-sans ml-1">(${o.note})</span>` : ''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    function truthTable(rows) {
+      return `<table class="w-full text-left border-collapse font-mono text-xs">
+        <thead>
+          <tr class="border-b border-white/10 text-gray-400 text-[11px] font-sans">
+            <th scope="col" class="py-2">A</th>
+            <th scope="col" class="py-2">B</th>
+            <th scope="col" class="py-2">A <span class="tok-kw font-bold">and</span> B</th>
+            <th scope="col" class="py-2">A <span class="tok-kw font-bold">or</span> B</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5">
+          ${rows.map(r => `
+            <tr class="hover:bg-white/[0.02] transition-colors">
+              <td class="py-1.5 font-bold ${r.a === 'True' ? 'text-emerald-400' : 'text-rose-400'}">${r.a}</td>
+              <td class="py-1.5 font-bold ${r.b === 'True' ? 'text-emerald-400' : 'text-rose-400'}">${r.b}</td>
+              <td class="py-1.5 font-bold ${r.andRes === 'True' ? 'text-emerald-400' : 'text-rose-400'}">${r.andRes}</td>
+              <td class="py-1.5 font-bold ${r.orRes === 'True' ? 'text-emerald-400' : 'text-rose-400'}">${r.orRes}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    function renderDynamicTables() {
+      const arith = document.getElementById('table-arithmetic');
+      if (arith) arith.innerHTML = opTable(arithmeticOps);
+
+      const rel = document.getElementById('table-relational');
+      if (rel) rel.innerHTML = opTable(relationalOps);
+
+      const log = document.getElementById('table-logical');
+      if (log) log.innerHTML = truthTable(logicalTruthTable);
+
+      const assign = document.getElementById('table-assignment');
+      if (assign) assign.innerHTML = opTable(assignmentOps, {
+        hasEquiv: true,
+        headers: ['Operator', 'Example', 'Equivalent To', 'New x']
+      });
+    }
+
+    // Initialize UI state, dynamic tables, and code panels
+    renderDynamicTables();
+    renderCodePanels();
+    goToSlide(1);
+  </script>
+</body>
+</html>
