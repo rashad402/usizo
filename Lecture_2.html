@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NumPy & Numerical Computing | Lecture 2 Presentation</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488' },
+            numpyBlue: '#4D77CF',
+            numpyCyan: '#013243',
+            darkBg: '#090d16',
+            cardBg: '#111827',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #090d16;
+      color: #f3f4f6;
+      overflow: hidden;
+    }
+    .slide {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      transform: scale(0.98) translateY(8px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: absolute;
+      inset: 0;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      position: relative;
+      overflow-y: auto;
+    }
+    .slide.active > * { margin-top: auto; margin-bottom: auto; }
+
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
+    }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(1.05); }
+    }
+    .ambient-glow { animation: pulseGlow 9s ease-in-out infinite; }
+
+    .text-\[10px\] { font-size: 11px !important; }
+    .text-\[11px\] { font-size: 12px !important; }
+
+    button:focus-visible, [role="button"]:focus-visible, summary:focus-visible {
+      outline: 2px solid #2dd4bf;
+      outline-offset: 2px;
+      border-radius: 8px;
+    }
+
+    details.quick-check > summary { cursor: pointer; }
+    details.quick-check > summary::-webkit-details-marker { display: none; }
+    details.quick-check .chevron { display: inline-block; transition: transform 0.2s; }
+    details.quick-check[open] .chevron { transform: rotate(90deg); }
+
+    .code-panel {
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 0.875rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      color: #f3f4f6;
+    }
+    .tok-str { color: #34d399; }
+    .tok-num { color: #22d3ee; }
+    .tok-fn  { color: #fbbf24; }
+    .tok-kw  { color: #f472b6; font-weight: 500; }
+    .tok-com { color: #9ca3af; font-style: italic; }
+
+    code, pre, kbd, .font-mono, .code-panel, table {
+      font-variant-ligatures: none !important;
+      font-feature-settings: "liga" 0, "calt" 0 !important;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between relative selection:bg-cyan-500 selection:text-white">
+
+  <!-- Ambient background glow -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="ambient-glow absolute -top-40 -left-40 w-96 h-96 rounded-full bg-cyan-600/20 blur-[130px]"></div>
+    <div class="ambient-glow absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-blue-600/15 blur-[140px]" style="animation-delay: -3s;"></div>
+    <div class="ambient-glow absolute -bottom-40 left-1/3 w-[450px] h-[450px] rounded-full bg-teal-600/15 blur-[130px]" style="animation-delay: -6s;"></div>
+  </div>
+
+  <!-- TOP HEADER -->
+  <header class="relative z-20 px-8 py-3.5 flex items-center justify-between border-b border-white/5 bg-darkBg/70 backdrop-blur-md">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center font-bold text-darkBg text-sm shadow-md shadow-cyan-500/20">
+        NP
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-sm font-semibold tracking-wide uppercase text-gray-400">CS Foundation Series</h1>
+          <span class="text-gray-600">&bull;</span>
+          <!-- Lecture Switcher -->
+          <div class="inline-flex items-center rounded-lg bg-white/5 p-0.5 border border-white/10 text-xs">
+            <a href="Lecture_1.html" class="px-2 py-0.5 rounded text-gray-400 hover:text-white hover:bg-white/10 transition">Lecture 1: Python</a>
+            <a href="Lecture_2.html" class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">Lecture 2: NumPy</a>
+          </div>
+        </div>
+        <p class="text-xs text-brand-400 font-medium tracking-wider">Usizo Lecture &bull; NumPy & Numerical Computing</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 glass-pill px-3 py-1.5 rounded-full text-xs font-mono text-gray-300" aria-live="polite">
+        <span id="current-slide-num" class="text-brand-400 font-bold text-sm">01</span>
+        <span class="text-gray-500">/</span>
+        <span id="total-slides-num">24</span>
+      </div>
+
+      <div class="flex items-center space-x-1.5">
+        <button onclick="toggleOverviewModal()" aria-label="Slide grid (G)" title="Slide Grid (G)" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition border border-transparent hover:border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        </button>
+        <button onclick="toggleFullScreen()" aria-label="Fullscreen (F)" title="Fullscreen (F)" class="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition border border-transparent hover:border-white/10">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SLIDES CONTAINER -->
+  <main class="relative z-10 flex-1 flex items-center justify-center p-6 md:p-10 max-w-7xl mx-auto w-full overflow-hidden">
+
+    <!-- ==================== SLIDE 1: WHAT IS NUMPY? ==================== -->
+    <div id="slide-1" class="slide active w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 01</span><span>&bull;</span><span>Numerical Python & Scientific Computing</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            What is <span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">NumPy?</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Foundation of Scientific Computing:</strong> Created in 2005 by Travis Oliphant, NumPy (Numerical Python) is the foundational open-source library that powers virtually all modern data science, machine learning, physics modeling, and AI in Python.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The n-Dimensional Array (ndarray):</strong> At its core is the <code>ndarray</code>: a fast, memory-compact, multi-dimensional array object that enables vectorized arithmetic and high-level mathematical computing.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">The Ecosystem Backbone:</strong> Every major scientific library in Python—including <strong>Pandas</strong>, <strong>SciPy</strong>, <strong>Scikit-Learn</strong>, <strong>PyTorch</strong>, and <strong>TensorFlow</strong>—relies directly on NumPy arrays under the hood.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-teal-400"></span>
+          The Python Scientific Computing Stack
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-between">
+            <span class="font-bold text-purple-300">Deep Learning & AI</span>
+            <span class="font-mono text-gray-400 text-[11px]">PyTorch &bull; TensorFlow</span>
+          </div>
+          <div class="p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between">
+            <span class="font-bold text-indigo-300">Data Science & ML</span>
+            <span class="font-mono text-gray-400 text-[11px]">Pandas &bull; Scikit-Learn</span>
+          </div>
+          <div class="p-3.5 rounded-xl bg-cyan-500/20 border-2 border-cyan-400 flex items-center justify-between shadow-lg shadow-cyan-500/10">
+            <div>
+              <span class="font-extrabold text-cyan-200 text-sm">NumPy Core (ndarray)</span>
+              <div class="text-[10px] text-cyan-300/80">Contiguous C-Arrays &bull; SIMD Vectorization</div>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-cyan-400/20 text-cyan-300 font-mono text-[10px] font-bold">FOUNDATION</span>
+          </div>
+          <div class="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+            <span class="font-semibold text-gray-300">Hardware Layer</span>
+            <span class="font-mono text-gray-400 text-[11px]">CPU L1/L2 Cache &bull; SIMD &bull; RAM</span>
+          </div>
+        </div>
+        <details class="quick-check p-3 rounded-lg bg-black/40 border border-white/10 text-xs">
+          <summary class="font-semibold text-teal-300 flex items-center justify-between cursor-pointer">
+            <span>💡 Quick Check: Why not standard Python lists?</span>
+            <span class="chevron text-gray-400">&gt;</span>
+          </summary>
+          <p class="mt-2 text-gray-300 text-[11px] leading-relaxed">
+            Python lists store pointers to scattered objects with massive memory overhead and slow iteration. NumPy stores raw, contiguous bytes manipulated directly at C speed!
+          </p>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 2: MEMORY ARCHITECTURE ==================== -->
+    <div id="slide-2" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 02</span><span>&bull;</span><span>Memory Architecture</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Python Lists vs. <br><span class="bg-gradient-to-r from-amber-400 to-rose-400 bg-clip-text text-transparent">Contiguous C Arrays</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Python Lists Store Pointers, Not Numbers:</strong> A Python list does not hold numbers directly. It holds 64-bit pointers (RAM addresses) pointing to scattered <code>PyObject</code> wrappers, each containing type tags, reference counts, and metadata.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Massive Memory Overhead:</strong> A single integer in a standard Python list takes <strong>28 bytes</strong> in memory. In a NumPy array, a 64-bit integer takes exactly <strong>8 bytes</strong>—~3.5x less memory (28B &rarr; 8B)!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Cache Locality & Hardware Acceleration:</strong> Because NumPy arrays are contiguous blocks of sequential memory, CPU caches (L1/L2) fetch entire chunks at once, enabling lightning-fast SIMD (Single Instruction, Multiple Data) execution.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Memory Layout in RAM
+        </div>
+        <div class="space-y-3">
+          <div class="p-3.5 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-rose-300">❌ Python List (Array of Pointers)</span>
+              <span class="text-rose-400 font-mono text-[10px]">~28 bytes / int</span>
+            </div>
+            <div class="flex items-center gap-1.5 font-mono text-[10px] text-gray-400 overflow-x-auto py-1">
+              <span class="px-2 py-1 rounded bg-black/60 border border-rose-500/40 text-rose-300">Ptr &rarr; [PyInt 1]</span>
+              <span class="px-2 py-1 rounded bg-black/60 border border-rose-500/40 text-rose-300">Ptr &rarr; [PyInt 2]</span>
+              <span class="px-2 py-1 rounded bg-black/60 border border-rose-500/40 text-rose-300">Ptr &rarr; [PyInt 3]</span>
+            </div>
+            <div class="text-[11px] text-gray-400">Scattered memory addresses cause constant CPU cache misses.</div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-emerald-300">✅ NumPy ndarray (Contiguous Buffer)</span>
+              <span class="text-emerald-400 font-mono text-[10px]">8 bytes / int (~3.5x less)</span>
+            </div>
+            <div class="flex items-center gap-1 font-mono text-xs text-white font-bold py-1">
+              <span class="px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/50">1</span>
+              <span class="px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/50">2</span>
+              <span class="px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/50">3</span>
+              <span class="px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/50">4</span>
+              <span class="px-3 py-1 rounded bg-emerald-500/20 border border-emerald-500/50">5</span>
+            </div>
+            <div class="text-[11px] text-gray-300">Single sequential memory block in C. ~3.5x less RAM and 100% cache-friendly!</div>
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 3: CORE FEATURES ==================== -->
+    <div id="slide-3" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 03</span><span>&bull;</span><span>Superpowers</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Four Core Features of <br><span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">NumPy</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Memory Efficient:</strong> Compact, homogeneous contiguous memory buffers eliminate pointer overhead, type tags, and garbage collection tracking per element.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Broadcasting Mechanics:</strong> Performs mathematical operations between arrays of different compatible shapes seamlessly without allocating redundant copies in RAM.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Rich Mathematical Ecosystem:</strong> Comes packed with battle-tested functions for linear algebra, Fourier transforms (FFT), pseudorandom number generators, and statistics.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="grid grid-cols-2 gap-3.5">
+        <div class="glass-card rounded-xl p-4 space-y-1.5 border-t-2 border-t-teal-400">
+          <div class="text-xl">💾</div>
+          <div class="text-xs font-bold text-white">1. Memory Efficient</div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">Uses 4x-8x less RAM than Python lists with zero object packaging bloat.</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 space-y-1.5 border-t-2 border-t-cyan-400">
+          <div class="text-xl">📡</div>
+          <div class="text-xs font-bold text-white">2. Broadcasting</div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">Operate on arrays of different dimensions without copying or reshaping.</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 space-y-1.5 border-t-2 border-t-indigo-400">
+          <div class="text-xl">🧮</div>
+          <div class="text-xs font-bold text-white">3. Rich Math Tools</div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">Native matrix algebra, trigonometry, statistics, FFT, and random sampling.</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 space-y-1.5 border-t-2 border-t-amber-400">
+          <div class="text-xl">⚡</div>
+          <div class="text-xs font-bold text-white">4. Fast Operations</div>
+          <div class="text-[11px] text-gray-400 leading-relaxed">Vectorized C-loops execute up to 100x faster than pure Python loops!</div>
+        </div>
+        <div class="col-span-2 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-between text-xs font-mono">
+          <span class="text-gray-400">Sum 10M elements:</span>
+          <span class="text-rose-400 font-semibold">Python: ~850 ms</span>
+          <span class="text-emerald-400 font-bold">NumPy: ~7.2 ms (118x faster!)</span>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 4: IMPORTING & CREATING ARRAYS ==================== -->
+    <div id="slide-4" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 04</span><span>&bull;</span><span>Array Creation</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Importing NumPy & <br><span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">Creating Arrays</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Universal Import Convention:</strong> Always import NumPy with the standard alias: <code>import numpy as np</code>. This two-letter alias is universally recognized across all scientific codebases.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">1-Dimensional Arrays (Vectors):</strong> Pass a Python list to <code>np.array()</code> to instantiate a 1D vector: <code>a1d = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">2-Dimensional Arrays (Matrices):</strong> Pass nested lists to create a 2D matrix: <code>a2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])</code>. Rows and columns form distinct axes.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="1D & 2D Array Creation">
+import numpy as np
+
+# 1D Vector (10 elements)
+a1d = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+# 2D Matrix (3 rows x 3 columns)
+a2d = np.array([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+])
+        </pre>
+
+        <div class="p-3.5 rounded-xl bg-black/40 border border-white/10">
+          <div class="text-[10px] text-gray-400 font-mono uppercase tracking-wider mb-2">2D Matrix Representation</div>
+          <div class="grid grid-cols-3 gap-1.5 font-mono text-xs text-center font-bold">
+            <div class="p-2 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">1</div>
+            <div class="p-2 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">2</div>
+            <div class="p-2 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300">3</div>
+            <div class="p-2 rounded bg-teal-500/10 border border-teal-500/30 text-teal-300">4</div>
+            <div class="p-2 rounded bg-teal-500/10 border border-teal-500/30 text-teal-300">5</div>
+            <div class="p-2 rounded bg-teal-500/10 border border-teal-500/30 text-teal-300">6</div>
+            <div class="p-2 rounded bg-blue-500/10 border border-blue-500/30 text-blue-300">7</div>
+            <div class="p-2 rounded bg-blue-500/10 border border-blue-500/30 text-blue-300">8</div>
+            <div class="p-2 rounded bg-blue-500/10 border border-blue-500/30 text-blue-300">9</div>
+          </div>
+          <div class="flex justify-between text-[10px] text-gray-500 mt-2 font-mono">
+            <span>&larr; Axis 0 (Rows: 3) &rarr;</span>
+            <span>&larr; Axis 1 (Cols: 3) &rarr;</span>
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 5: ARRAY ATTRIBUTES ==================== -->
+    <div id="slide-5" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 05</span><span>&bull;</span><span>Array Metadata</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Essential <br><span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Array Attributes</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Attributes, Not Functions:</strong> NumPy arrays have built-in metadata properties. Note: they are attributes without parentheses: call <code>a.shape</code>, NOT <code>a.shape()</code>!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Shape & Dimensions:</strong> <code>.shape</code> returns a tuple of lengths per axis <code>(rows, cols)</code>. <code>.ndim</code> returns the number of axes (1 for vectors, 2 for matrices).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Element Count & Memory Footprint:</strong> <code>.size</code> gives the total number of items (rows &times; columns). <code>.itemsize</code> returns the bytes consumed by a single element.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          Array Inspection Attributes
+        </div>
+        <div id="table-attributes" class="overflow-x-auto"></div>
+        <details class="quick-check p-3 rounded-lg bg-black/40 border border-white/10 text-xs">
+          <summary class="font-semibold text-cyan-300 flex items-center justify-between cursor-pointer">
+            <span>🔍 Predict: What is a2d.shape & a2d.size?</span>
+            <span class="chevron text-gray-400">&gt;</span>
+          </summary>
+          <div class="mt-2 text-gray-300 text-[11px] font-mono leading-relaxed space-y-1">
+            <div>a2d.shape &rarr; <span class="text-emerald-400">(3, 3)</span> (3 rows, 3 columns)</div>
+            <div>a2d.ndim  &rarr; <span class="text-emerald-400">2</span></div>
+            <div>a2d.size  &rarr; <span class="text-emerald-400">9</span> total elements</div>
+            <div>a2d.itemsize &rarr; <span class="text-emerald-400">4 or 8</span> bytes (depending on OS/bitness)</div>
+          </div>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 6: CREATION ROUTINES ==================== -->
+    <div id="slide-6" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 06</span><span>&bull;</span><span>Initialization</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Array Creation: <br><span class="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Zeros, Ones & Full</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Pre-Allocation Rule (Avoid np.append in Loops):</strong> NumPy arrays have NO <code>.append()</code> method (calling <code>arr.append()</code> raises an <code>AttributeError</code>). There is only the module function <code>np.append()</code>, which allocates and copies the entire array every iteration (an <i>O</i>(<i>N</i><sup>2</sup>) slowdown). Always pre-allocate your final shape with <code>np.zeros()</code> or <code>np.full()</code>!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Zeros & Ones Arrays:</strong> <code>np.zeros((2, 6))</code> creates a 2 &times; 6 array filled with <code>0.0</code>. <code>np.ones((3, 3))</code> fills with <code>1.0</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Custom Values with np.full():</strong> <code>np.full((2, 6), 0.0)</code> or <code>np.full((3, 4), 9.9)</code> instantly pre-allocates an array filled entirely with your chosen constant.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <pre class="py-code" data-title="Pre-allocation Routines">
+import numpy as np
+
+# 2x6 array filled with 0.0
+z = np.zeros((2, 6))
+
+# Alternative using np.full
+f = np.full((2, 6), 0.0)
+
+# 3x3 array of 1.0
+o = np.ones((3, 3))
+
+# 3x3 array filled with 7
+sevens = np.full((3, 3), 7)
+        </pre>
+        <div class="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1.5 text-xs">
+          <div class="text-[10px] text-gray-400 font-mono uppercase">Output for np.zeros((2, 6)):</div>
+          <div class="font-mono text-[11px] text-teal-300 bg-white/5 p-2 rounded">
+            [[0., 0., 0., 0., 0., 0.],<br>
+            &nbsp;[0., 0., 0., 0., 0., 0.]]
+          </div>
+          <div class="text-[10px] text-gray-500">Shape: (2, 6) &bull; Size: 12 &bull; Default dtype: float64</div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 7: RANDOM ARRAYS ==================== -->
+    <div id="slide-7" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 07</span><span>&bull;</span><span>Stochastic Generation</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Generating <br><span class="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">Random Arrays</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Uniform Floats [0.0, 1.0):</strong> <code>np.random.rand(2, 2)</code> generates a 2 &times; 2 matrix of random floating-point values uniformly distributed between 0 and 1.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Discrete Random Integers:</strong> <code>np.random.randint(low, high, size)</code> generates random integers in the interval <code>[low, high)</code>. Note: the upper boundary is <em>exclusive</em>!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Reproducibility with Seeds:</strong> <code>np.random.seed(42)</code> locks the pseudorandom generator seed, guaranteeing identical outputs on any machine—crucial for scientific experiments.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Random Functions">
+import numpy as np
+
+# Uniform floats between 0 and 1 (2x2)
+r_floats = np.random.rand(2, 2)
+
+# Random dice rolls 1 to 6 (2x2 grid)
+dice = np.random.randint(1, 7, size=(2, 2))
+        </pre>
+        <div class="p-3.5 rounded-xl bg-purple-950/30 border border-purple-500/30 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-purple-300">🎲 Simulated 2x2 Dice Rolls</span>
+            <span class="font-mono text-purple-400 text-[10px]">np.random.randint(1, 7, size=(2, 2))</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-center font-mono text-sm font-extrabold text-white">
+            <div class="p-2.5 rounded-lg bg-purple-500/20 border border-purple-500/40">4 🎲</div>
+            <div class="p-2.5 rounded-lg bg-purple-500/20 border border-purple-500/40">6 🎲</div>
+            <div class="p-2.5 rounded-lg bg-purple-500/20 border border-purple-500/40">1 🎲</div>
+            <div class="p-2.5 rounded-lg bg-purple-500/20 border border-purple-500/40">5 🎲</div>
+          </div>
+          <div class="text-[11px] text-gray-400">7 is never rolled because the high bound is exclusive.</div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 8: ARRAY TYPES & DTYPES ==================== -->
+    <div id="slide-8" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 08</span><span>&bull;</span><span>Data Types & Memory Architecture</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Strictly Typed: <br><span class="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">The `dtype` System</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Strict Type Homogeneity:</strong> Every single element in a NumPy array MUST have the exact same data type. This allows direct pointer arithmetic without checking object types at runtime.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Automatic Type Inference:</strong> NumPy inspects your input values to choose the best type: integers default to <code>int32</code> or <code>int64</code> (depending on OS C-long width: typically int32 on Windows, int64 on Linux/macOS), floats to <code>float64</code>, strings to fixed-width Unicode (<code>&lt;U3</code>).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Type Conversion with .astype():</strong> You can cast an array to another data type using <code>a.astype(np.float32)</code>. This is fundamental in neural networks for memory quantization.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <!-- 3 Illustrated Columns Representation (From Slide Notes) -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-2">
+          <span class="text-xs font-bold text-white uppercase tracking-wider">Common Array Types</span>
+          <span class="text-[10px] font-mono text-amber-400 font-semibold">100% Homogeneous</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- Column 1: Boolean -->
+          <div class="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-300">Bool</span>
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-mono">8 bits</span>
+              </div>
+              <div class="text-[10px] font-mono text-emerald-400 font-bold mt-1">bool / bool_</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Binary logic flags</div>
+            </div>
+            <div class="p-1.5 rounded-lg bg-black/50 border border-emerald-500/20 text-center font-mono text-[11px] font-bold text-emerald-300 flex justify-around">
+              <span>True</span><span class="text-gray-600">|</span><span>False</span>
+            </div>
+            <div class="text-[9px] text-emerald-400/80 font-mono text-center">1 byte / item</div>
+          </div>
+
+          <!-- Column 2: Integer -->
+          <div class="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300">Int</span>
+                <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-mono">Signed</span>
+              </div>
+              <div class="text-[10px] font-mono text-cyan-400 font-bold mt-1">int8, 16, 32, 64</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Discrete integers</div>
+            </div>
+            <div class="space-y-0.5 text-[9px] font-mono bg-black/50 p-1.5 rounded-lg border border-cyan-500/20">
+              <div class="flex justify-between"><span>int8:</span><span class="text-gray-400">1 byte [-128..127]</span></div>
+              <div class="flex justify-between"><span>int32:</span><span class="text-cyan-300 font-bold">4 bytes (Win default)</span></div>
+              <div class="flex justify-between"><span>int64:</span><span class="text-cyan-300 font-bold">8 bytes (Unix default)</span></div>
+            </div>
+            <div class="text-[9px] text-cyan-400/80 font-mono text-center">4 or 8 bytes (OS dependent)</div>
+          </div>
+
+          <!-- Column 3: Float -->
+          <div class="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-300">Float</span>
+                <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono">IEEE 754</span>
+              </div>
+              <div class="text-[10px] font-mono text-amber-400 font-bold mt-1">float16, 32, 64</div>
+              <div class="text-[10px] text-gray-400 mt-0.5">Real decimals</div>
+            </div>
+            <div class="space-y-0.5 text-[9px] font-mono bg-black/50 p-1.5 rounded-lg border border-amber-500/20">
+              <div class="flex justify-between"><span>float16:</span><span class="text-gray-400">Half (Edge AI)</span></div>
+              <div class="flex justify-between"><span>float32:</span><span class="text-gray-400">Single (GPUs)</span></div>
+              <div class="flex justify-between font-bold text-amber-300"><span>float64:</span><span>Double (Default)</span></div>
+            </div>
+            <div class="text-[9px] text-amber-400/80 font-mono text-center">Scientific precision</div>
+          </div>
+        </div>
+
+        <!-- Code Panel showing .dtype queries -->
+        <pre class="py-code" data-title="Code-Editor Example: .dtype in Action">
+a = np.array([1])       # dtype: int32 or int64
+b = np.array([1.0])     # dtype: float64
+c = np.array(['abc'])   # dtype: &lt;U3 (Unicode len 3)
+d = np.array([b'abc'])  # dtype: |S3 (Byte string)
+        </pre>
+
+        <!-- Prediction Drawer -->
+        <details class="quick-check p-2.5 rounded-lg bg-black/40 border border-white/10 text-xs">
+          <summary class="font-semibold text-amber-300 flex items-center justify-between cursor-pointer">
+            <span>🤔 Predict: What happens to np.array([1, 2.5, 3])?</span>
+            <span class="chevron text-gray-400">&gt;</span>
+          </summary>
+          <p class="mt-1.5 text-gray-300 text-[11px]">
+            NumPy automatically upcasts the integers to float64! Output: <code>array([1.0, 2.5, 3.0])</code> with <code>dtype=float64</code>.
+          </p>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 9: INDEXING & SLICING ==================== -->
+    <div id="slide-9" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 09</span><span>&bull;</span><span>Element Selection</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Selecting Array Entries: <br><span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">`[row, column]` Indexing</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Coordinate Indexing Syntax:</strong> Access 2D elements using comma notation: <code>a2d[row, col]</code> instead of Python's slower <code>list[row][col]</code> chained indexing.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Directional Intuition:</strong> The first index counts <strong>downwards</strong> across rows (axis 0). The second index counts <strong>rightwards</strong> across columns (axis 1).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Full Axis Selection with Colon (:):</strong> Use <code>:</code> to select all elements along an axis: <code>a2d[0, :]</code> grabs the entire first row; <code>a2d[:, 0]</code> grabs the entire first column.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <pre class="py-code" data-title="Indexing Examples">
+a1d = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+a2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+a1d[0]     # -> 0
+a2d[0, 1]  # -> 2  (Row 0, Col 1)
+a2d[0, :]  # -> array([1, 2, 3]) (Full Row 0)
+a2d[:, 0]  # -> array([1, 4, 7]) (Full Col 0)
+        </pre>
+        <div class="p-3 rounded-xl bg-black/40 border border-white/10">
+          <div class="text-[10px] text-gray-400 font-mono uppercase mb-2">Coordinate Visualization for a2d[0, 1]</div>
+          <div class="grid grid-cols-3 gap-1.5 font-mono text-xs text-center">
+            <div class="p-2 rounded bg-white/5 text-gray-400">[0,0]=1</div>
+            <div class="p-2 rounded bg-teal-500/30 border border-teal-400 text-teal-200 font-extrabold shadow-md">[0,1]=2 🎯</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[0,2]=3</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[1,0]=4</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[1,1]=5</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[1,2]=6</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[2,0]=7</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[2,1]=8</div>
+            <div class="p-2 rounded bg-white/5 text-gray-400">[2,2]=9</div>
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 10: SLICING & STRIDING ==================== -->
+    <div id="slide-10" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 10</span><span>&bull;</span><span>Slicing Mechanics</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Array Slicing: <br><span class="bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent">`[start:stop:step]`</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Boundary Rules:</strong> Standard slice format: <code>array[start:stop:step]</code>. <code>a1d[:3]</code> yields <code>[0, 1, 2]</code>. <code>a1d[3:6]</code> yields <code>[3, 4, 5]</code>. <code>a1d[6:]</code> yields <code>[6, 7, 8, 9]</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Striding & Reversal:</strong> Use steps to skip elements: <code>a1d[0:8:2]</code> takes every second value: <code>[0, 2, 4, 6]</code>. <code>a1d[::-1]</code> reverses the entire array in <i>O</i>(1) time (instantaneous)!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">2D Sub-Grid Slicing:</strong> Combine row and column slices to crop matrices: <code>a2d[1:, :]</code> crops everything from row index 1 downwards across all columns.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <pre class="py-code" data-title="Slicing Examples">
+# 1D Forward & Stepped Slicing
+a1d[:3]     # -> [0, 1, 2]
+a1d[3:6]    # -> [3, 4, 5]
+a1d[0:8:2]  # -> [0, 2, 4, 6]
+
+# Negative & Reverse Steps
+a1d[3:0:-1] # -> [3, 2, 1]
+a1d[::-1]   # -> [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+
+# 2D Sub-matrix Slicing (rows 1 & 2)
+a2d[1:, :]  # -> [[4, 5, 6], [7, 8, 9]]
+        </pre>
+        <details class="quick-check p-3 rounded-lg bg-black/40 border border-white/10 text-xs">
+          <summary class="font-semibold text-teal-300 flex items-center justify-between cursor-pointer">
+            <span>🔍 Predict: What does a2d[:2, :2] return?</span>
+            <span class="chevron text-gray-400">&gt;</span>
+          </summary>
+          <div class="mt-2 text-gray-300 text-[11px] font-mono leading-relaxed">
+            Extracts top-left 2x2 quadrant:<br>
+            <code>array([[1, 2],<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[4, 5]])</code>
+          </div>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 11: VIEWS VS COPIES ==================== -->
+    <div id="slide-11" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 11</span><span>&bull;</span><span>Memory Pitfalls (CRITICAL)</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Views vs. Copies: <br><span class="bg-gradient-to-r from-rose-400 to-red-500 bg-clip-text text-transparent">The Accidental Mutation Trap</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Python List Slices Make COPIES:</strong> In Python, <code>list_copy = my_list[:]</code> allocates a new independent list. Modifying <code>list_copy[0] = 99</code> does NOT change <code>my_list</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">NumPy Array Slices Make VIEWS:</strong> Slicing a NumPy array (<code>array_view = array[:]</code>) DOES NOT copy the data! It returns a lightweight 'view' window pointing to the SAME memory buffer!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Dangerous Unintended Mutation:</strong> Modifying <code>array_view[0] = 10</code> <strong>SILENTLY MODIFIES</strong> the original <code>array[0]</code>! This zero-copy behavior makes NumPy blazing fast, but can cause insidious bugs.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-1.5">
+            <div class="text-xs font-bold text-emerald-300">🐍 Python List (Copy)</div>
+            <pre class="bg-black/60 p-2 rounded text-[10px] font-mono text-gray-300">lst = [1, 2, 3]
+sub = lst[:]
+sub[0] = 10
+# lst is STILL [1, 2, 3] ✅</pre>
+            <div class="text-[10px] text-gray-400">Independent memory block.</div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-1.5">
+            <div class="text-xs font-bold text-rose-300">⚡ NumPy Array (View!)</div>
+            <pre class="bg-black/60 p-2 rounded text-[10px] font-mono text-gray-300">arr = np.array([1, 2, 3])
+sub = arr[:]
+sub[0] = 10
+# arr IS NOW [10, 2, 3] ⚠️</pre>
+            <div class="text-[10px] text-rose-300 font-semibold">Shared underlying RAM buffer!</div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs text-gray-300">
+          ⚠️ <strong>Takeaway:</strong> Always assume slices in NumPy share memory. If you want to modify a slice safely, you must create an explicit copy!
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 12: COPYING ARRAYS ==================== -->
+    <div id="slide-12" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 12</span><span>&bull;</span><span>Safe Mutation</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Breaking the Link: <br><span class="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Copying Arrays</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">When to Make a Real Copy:</strong> Whenever you want to normalize, alter, clean, or mutate a sub-array without corrupting your raw master dataset in RAM.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Explicit Copy Syntax:</strong> Use <code>np.copy(array)</code> or the object method <code>array.copy()</code> to allocate a brand-new contiguous buffer in memory.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Verification via .base Attribute:</strong> You can check if an array owns its memory: <code>a_view.base is None</code> evaluates to <code>False</code> (it's a view), while <code>a_copy.base is None</code> evaluates to <code>True</code> (owns its memory!).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Independent Memory Copy">
+import numpy as np
+
+original = np.array([1, 2, 3])
+
+# Explicitly create an independent copy
+safe_copy = np.copy(original)
+# or: safe_copy = original.copy()
+
+# Modifying the copy is 100% safe
+safe_copy[0] = 999
+
+print(original)   # -> [1, 2, 3] (Untouched!)
+print(safe_copy)  # -> [999, 2, 3]
+        </pre>
+        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-xs text-gray-300 space-y-1">
+          <div class="font-bold text-cyan-300">💡 Pro Tip: Checking Memory Ownership</div>
+          <div class="font-mono text-[11px] text-gray-400">safe_copy.base is None &rarr; <span class="text-emerald-400 font-bold">True</span> (Independent Memory)</div>
+          <div class="font-mono text-[11px] text-gray-400">sliced_view.base is None &rarr; <span class="text-rose-400 font-bold">False</span> (Shares Original RAM)</div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 13: ELEMENT-WISE OPERATORS ==================== -->
+    <div id="slide-13" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 13</span><span>&bull;</span><span>Vectorized Arithmetic</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Element-Wise Operators: <br><span class="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Vectorized Operations</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">No for-loops Required:</strong> Arithmetic operators in NumPy (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>**</code>) operate in parallel element-by-element across matching positions.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Unary Negation (-a):</strong> Flips the sign of every element simultaneously: <code>-[0, 1, 2, 3]</code> yields <code>[0, -1, -2, -3]</code> at hardware speed.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Hadamard (Element-Wise) Product:</strong> Notice: <code>a * b</code> multiplies corresponding entries (<i>a</i><sub>0</sub> &times; <i>b</i><sub>0</sub>, <i>a</i><sub>1</sub> &times; <i>b</i><sub>1</sub>, ...). It is <strong>NOT</strong> matrix multiplication!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Element-Wise Arithmetic">
+a = np.array([0, 1, 2, 3])
+b = np.array([2, 2, 2, 2])
+
+# Negation
+print(-a)     # -> [ 0, -1, -2, -3]
+
+# Addition
+print(a + b)  # -> [ 2,  3,  4,  5]
+
+# Multiplication (Element-wise)
+print(a * b)  # -> [ 0,  2,  4,  6]
+        </pre>
+        <div class="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-2">
+          <div class="text-[10px] text-gray-400 font-mono uppercase">Parallel Hardware Execution (SIMD)</div>
+          <div class="flex items-center justify-between font-mono text-xs">
+            <span class="text-teal-300">[ 0, &nbsp;1, &nbsp;2, &nbsp;3 ]</span>
+            <span class="text-gray-500">&times;</span>
+            <span class="text-cyan-300">[ 2, &nbsp;2, &nbsp;2, &nbsp;2 ]</span>
+            <span class="text-gray-500">=</span>
+            <span class="text-emerald-400 font-bold">[ 0, &nbsp;2, &nbsp;4, &nbsp;6 ]</span>
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 14: ARRAY COMPARISONS ==================== -->
+    <div id="slide-14" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 14</span><span>&bull;</span><span>Boolean Logic & Traps</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Array Comparisons & <br><span class="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">The Boolean Array Warning</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Relational Operators Return Boolean Arrays:</strong> Evaluating <code>a &lt; b</code> checks each pair and returns an array of Booleans: <code>[True, True, False, False]</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Fatal if Statement Trap:</strong> Never write <code>if a == b:</code>! Python raises <code>ValueError: The truth value of an array with more than one element is ambiguous</code> because the condition is an array of booleans.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">The Proper Equality Tool:</strong> To verify if two arrays are completely identical, use <code>np.array_equal(a, b)</code>, or use <code>(a == b).all()</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Boolean Comparisons">
+a = np.array([0, 1, 2, 3])
+b = np.array([2, 2, 2, 2])
+
+# Element-wise comparison
+print(a < b)   # -> [ True,  True, False, False]
+print(a == b)  # -> [False, False,  True, False]
+
+# ❌ FATAL ERROR IN IF STATEMENTS:
+# if a == b:   # ValueError: Truth value is ambiguous!
+
+# ✅ CORRECT USAGE:
+if np.array_equal(a, b):
+    print("Identical arrays!")
+        </pre>
+        <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs space-y-1">
+          <div class="text-amber-300 font-bold">⚠️ Why does if a == b fail?</div>
+          <div class="text-gray-300 text-[11px] leading-relaxed">
+            <code>a == b</code> produces <code>[False, False, True, False]</code>. Python doesn't know whether you want ALL elements to match or ANY element to match. Use <code>np.array_equal()</code>!
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 15: BROADCASTING & CONSTANTS ==================== -->
+    <div id="slide-15" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 15</span><span>&bull;</span><span>Broadcasting & Constants</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Scalar Broadcasting & <br><span class="bg-gradient-to-r from-indigo-400 to-teal-400 bg-clip-text text-transparent">Mathematical Constants</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Scalar Broadcasting:</strong> When operating on an array and a single scalar (e.g. <code>a + 1</code>), NumPy conceptually stretches the scalar across every element without duplicating memory.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Broadcasting Compatibility Rule:</strong> Two dimensions are compatible when they are equal, OR when one of them is 1.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Built-in Scientific Constants:</strong> NumPy provides direct mathematical constants: <code>np.pi</code> (3.14159...), <code>np.e</code> (2.71828...), <code>np.nan</code> (Not a Number / missing), and <code>np.inf</code> (Infinity).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Broadcasting & Constants">
+a = np.array([0, 1, 2, 3])
+
+# Scalar broadcasting
+print(a + 1)       # -> [1, 2, 3, 4]
+print(a * 10)      # -> [0, 10, 20, 30]
+
+# Scientific constants
+print(a + np.pi)   # -> [3.1416, 4.1416, 5.1416, 6.1416] (rounded to 4 dec)
+print(a + np.e)    # -> [2.7183, 3.7183, 4.7183, 5.7183] (rounded to 4 dec)
+print(np.nan)      # -> nan (Missing value marker)
+        </pre>
+        <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-xs font-mono">
+          <div class="space-y-1">
+            <span class="text-teal-400 font-bold">np.pi:</span> 3.14159265...<br>
+            <span class="text-cyan-400 font-bold">np.e:</span> &nbsp;2.71828182...
+          </div>
+          <div class="space-y-1 text-right">
+            <span class="text-amber-400 font-bold">np.nan:</span> IEEE 754 NaN<br>
+            <span class="text-rose-400 font-bold">np.inf:</span> &infin; Overflow
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 16: UNIVERSAL FUNCTIONS (UFUNCS) ==================== -->
+    <div id="slide-16" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 16</span><span>&bull;</span><span>Mathematical Functions</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Universal Functions (Ufuncs): <br><span class="bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">C-Speed Vector Math</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">What is a Ufunc?:</strong> A Universal Function (ufunc) is a vectorized wrapper written in compiled C that executes mathematical calculations element-by-element across ndarrays.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Trigonometry & Roots:</strong> <code>np.sin(a)</code>, <code>np.cos(a)</code>, and <code>np.sqrt(a)</code> compute transcendental functions across entire arrays in a single vectorized pass.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Exponentials & Logarithms:</strong> <code>np.exp(a)</code> computes <i>e</i><sup><i>x</i></sup>, <code>np.log(a)</code> computes the natural logarithm ln(<i>x</i>), and <code>np.abs(a)</code> calculates absolute values.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Ufunc Operations">
+a = np.array([0, 1, 4, 9], dtype=float)
+
+# Square root
+print(np.sqrt(a))
+# Output: [0., 1., 2., 3.]
+
+angles = np.array([0, np.pi/2, np.pi])
+print(np.sin(angles))
+# Output: [0., 1., 0.]  (approx within float precision)
+        </pre>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs font-mono">
+          <div class="p-2.5 rounded-lg bg-teal-500/10 border border-teal-500/30">
+            <div class="text-teal-300 font-bold">Trig</div>
+            <div class="text-[10px] text-gray-400 mt-1">sin, cos, tan</div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30">
+            <div class="text-cyan-300 font-bold">Exponential</div>
+            <div class="text-[10px] text-gray-400 mt-1">exp, log, log10</div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
+            <div class="text-indigo-300 font-bold">Powers</div>
+            <div class="text-[10px] text-gray-400 mt-1">sqrt, power, abs</div>
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 17: AGGREGATIONS & AXES ==================== -->
+    <div id="slide-17" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 17</span><span>&bull;</span><span>Reductions & Dimensions</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Aggregations: <br><span class="bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Demystifying `axis=0` vs `axis=1`</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Global Aggregation:</strong> <code>np.sum(a2d)</code> aggregates every number in the entire array, collapsing it into a single scalar sum (1 + 2 + ... + 9 = 45).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">axis=0: Downwards (Collapse Rows):</strong> <code>np.sum(a2d, axis=0)</code> sums down the columns. It collapses rows to produce column-wise totals: <code>[12, 15, 18]</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">axis=1: Rightwards (Collapse Columns):</strong> <code>np.sum(a2d, axis=1)</code> sums across the rows. It collapses columns to produce row-wise totals: <code>[6, 15, 24]</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Aggregations by Axis">
+a2d = np.array([
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+])
+
+np.sum(a2d)          # -> 45 (Grand total)
+np.sum(a2d, axis=0)  # -> [12, 15, 18] (Column sums)
+np.sum(a2d, axis=1)  # -> [ 6, 15, 24] (Row sums)
+        </pre>
+        <div class="p-3.5 rounded-xl bg-black/40 border border-white/10 space-y-2 text-xs font-mono">
+          <div class="flex items-center justify-between text-teal-300 font-bold border-b border-white/10 pb-1">
+            <span>⬇️ axis=0 (Downwards / Columns)</span>
+            <span class="text-gray-400 text-[10px]">Rows collapse</span>
+          </div>
+          <div class="flex items-center justify-between text-amber-300 font-bold">
+            <span>➡️ axis=1 (Rightwards / Rows)</span>
+            <span class="text-gray-400 text-[10px]">Columns collapse</span>
+          </div>
+          <div class="text-[11px] text-gray-400 font-sans pt-1">
+            Other aggregations: <code>mean()</code>, <code>min()</code>, <code>max()</code>, <code>std()</code>.
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 18: EXERCISE 1: TOTAL PRICE ==================== -->
+    <div id="slide-18" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 18</span><span>&bull;</span><span>Practical Challenge 1</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Applied Exercise 1: <br><span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Supermarket POS Total Bill</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Challenge:</strong> You are building a Point-Of-Sale (POS) cash counter. Given an array of item prices and an array of quantities purchased by a customer, determine the total bill.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Dataset:</strong> <code>prices = np.array([3.99, 4.99, 3.99, 12.99])</code><br><code>quantities = np.array([3, 0, 0, 2])</code> (Customer buys 3 of Item 0 and 2 of Item 3).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Vectorized Approach:</strong> Multiply prices by quantities element-wise, then sum all item totals. Can also be computed via dot product: <code>prices @ quantities</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <div class="p-3.5 rounded-xl bg-white/5 border border-white/10 space-y-1">
+          <div class="text-xs font-bold text-teal-300">🛒 The Shopping Cart</div>
+          <div class="text-xs font-mono text-gray-300">Item 1: $3.99 &times; 3 = $11.97</div>
+          <div class="text-xs font-mono text-gray-400">Item 2: $4.99 &times; 0 = $0.00</div>
+          <div class="text-xs font-mono text-gray-400">Item 3: $3.99 &times; 0 = $0.00</div>
+          <div class="text-xs font-mono text-gray-300">Item 4: $12.99 &times; 2 = $25.98</div>
+        </div>
+
+        <details class="quick-check p-3.5 rounded-xl bg-teal-950/30 border border-teal-500/40 text-xs" open>
+          <summary class="font-bold text-teal-300 flex items-center justify-between cursor-pointer">
+            <span>✅ Click to View Vectorized Solution</span>
+            <span class="chevron text-teal-400">&gt;</span>
+          </summary>
+          <pre class="mt-2.5 bg-black/60 p-2.5 rounded font-mono text-[11px] text-gray-200">prices = np.array([3.99, 4.99, 3.99, 12.99])
+quantities = np.array([3, 0, 0, 2])
+
+# Vectorized item totals + grand sum
+total_price = np.sum(prices * quantities)
+
+print(round(total_price, 2))
+# Output: 37.95</pre>
+          <div class="mt-2 text-emerald-400 font-bold text-sm">Grand Total: $37.95</div>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 19: EXERCISE 2: KINETIC ENERGY ==================== -->
+    <div id="slide-19" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 19</span><span>&bull;</span><span>Practical Challenge 2</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Applied Exercise 2: <br><span class="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">Physics Kinetic Energy (<i>E</i><sub>k</sub> = &frac12;<i>mv</i><sup>2</sup>)</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Physical Principle:</strong> The kinetic energy of a body with mass <i>m</i> moving at velocity <i>v</i> is given by the formula: <strong><i>E</i><sub>k</sub> = &frac12;<i>mv</i><sup>2</sup></strong>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Challenge:</strong> Given arrays representing masses and velocities of 4 bodies, compute the individual kinetic energy of each body and the total kinetic energy of the entire system.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Vectorized Formula:</strong> <code>ke = 0.5 * masses * (velocities ** 2)</code>. NumPy computes power and multiplication across all bodies in a single vectorized step!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-gray-300 space-y-1">
+          <div>masses &nbsp; &nbsp;= [1.2, 2.2, 1.5, 2.0] kg</div>
+          <div>velocities = [12.0, 14.0, 14.0, 7.5] m/s</div>
+        </div>
+
+        <details class="quick-check p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/40 text-xs" open>
+          <summary class="font-bold text-indigo-300 flex items-center justify-between cursor-pointer">
+            <span>✅ Click to View Vectorized Solution</span>
+            <span class="chevron text-indigo-400">&gt;</span>
+          </summary>
+          <pre class="mt-2.5 bg-black/60 p-2.5 rounded font-mono text-[11px] text-gray-200">masses = np.array([1.2, 2.2, 1.5, 2.0])
+velocities = np.array([12.0, 14.0, 14.0, 7.5])
+
+# Vectorized Kinetic Energy calculation
+ke = 0.5 * masses * (velocities ** 2)
+total_ke = np.sum(ke)
+
+print("Individual KE:", ke)
+# -> [86.4, 215.6, 147.0, 56.25]
+print("Total KE:", total_ke)
+# -> 505.25 Joules</pre>
+          <div class="mt-2 text-cyan-300 font-bold text-sm">Total Kinetic Energy: 505.25 Joules</div>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 20: EXERCISE 3: TRIANGLE CENTROID ==================== -->
+    <div id="slide-20" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 20</span><span>&bull;</span><span>Practical Challenge 3</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Applied Exercise 3: <br><span class="bg-gradient-to-r from-purple-400 to-rose-400 bg-clip-text text-transparent">Centroid of a 2D Triangle</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Centroid Definition:</strong> The centroid of a polygon (its center of mass / balance point) is the arithmetic mean of the coordinates of all its vertices: <strong><i>C</i> = &frac13;(<i>A</i> + <i>B</i> + <i>C</i>)</strong>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Given Triangle Vertices:</strong> Vertex coordinates: <i>A</i>(5, 1), <i>B</i>(6, 8), and <i>C</i>(1, 3) in 2D space.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Two Vectorized Solutions:</strong> Method 1: Direct coordinate vector addition: <code>(a + b + c) / 3</code>.<br>Method 2: 2D Matrix reduction: <code>np.mean([a, b, c], axis=0)</code>.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3">
+        <!-- Triangle SVG diagram -->
+        <div class="h-28 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center relative overflow-hidden">
+          <svg viewBox="0 0 100 90" class="w-48 h-full">
+            <polygon points="50,80 60,10 10,60" fill="rgba(168, 85, 247, 0.2)" stroke="#a855f7" stroke-width="2"/>
+            <circle cx="50" cy="80" r="3" fill="#2dd4bf"/>
+            <text x="54" y="85" fill="#2dd4bf" font-size="6" font-family="monospace">A(5,1)</text>
+            <circle cx="60" cy="10" r="3" fill="#2dd4bf"/>
+            <text x="64" y="14" fill="#2dd4bf" font-size="6" font-family="monospace">B(6,8)</text>
+            <circle cx="10" cy="60" r="3" fill="#2dd4bf"/>
+            <text x="2" y="55" fill="#2dd4bf" font-size="6" font-family="monospace">C(1,3)</text>
+            <!-- Centroid -->
+            <circle cx="40" cy="50" r="4" fill="#f43f5e"/>
+            <text x="34" y="44" fill="#f43f5e" font-size="6" font-weight="bold" font-family="monospace">Centroid(4,4)</text>
+          </svg>
+        </div>
+
+        <details class="quick-check p-3 rounded-xl bg-purple-950/30 border border-purple-500/40 text-xs" open>
+          <summary class="font-bold text-purple-300 flex items-center justify-between cursor-pointer">
+            <span>✅ Click to View Vectorized Solution</span>
+            <span class="chevron text-purple-400">&gt;</span>
+          </summary>
+          <pre class="mt-2 bg-black/60 p-2.5 rounded font-mono text-[11px] text-gray-200">a = np.array([5, 1])
+b = np.array([6, 8])
+c = np.array([1, 3])
+
+# Method 1: Component vector sum
+centroid = (a + b + c) / 3
+
+# Method 2: Mean along axis 0
+vertices = np.array([a, b, c])
+centroid2 = np.mean(vertices, axis=0)
+
+print(centroid) # -> [4., 4.]</pre>
+        </details>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 21: VECTOR OPERATIONS ==================== -->
+    <div id="slide-21" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 21</span><span>&bull;</span><span>Linear Algebra</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Vector Math: <br><span class="bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">Addition, Subtraction & Scaling</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Vectors as Geometric Arrows:</strong> In machine learning, data points, word embeddings, and physical forces are represented as 1D vectors with magnitude and direction.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Vector Addition & Subtraction:</strong> <code>u + v</code> combines components along each axis (e.g. [<i>x</i><sub>1</sub> + <i>x</i><sub>2</sub>, <i>y</i><sub>1</sub> + <i>y</i><sub>2</sub>]). Vectors must have the exact same shape.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Scalar Multiplication (Scaling):</strong> Multiplying a vector by a scalar (e.g. <code>scalar * a</code>) stretches or shrinks the vector's length by that factor without changing its direction angle.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Vector Operations">
+import numpy as np
+
+# Two 3D vectors
+u = np.array([1, 2, 3])
+v = np.array([4, 5, 6])
+
+# Vector addition & subtraction
+print(u + v)  # -> [5, 7, 9]
+print(v - u)  # -> [3, 3, 3]
+
+# Scalar multiplication (Scaling by 3)
+scalar = 3
+scaled = scalar * u
+print(scaled) # -> [3, 6, 9]
+        </pre>
+        <div class="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 flex items-center justify-between text-xs">
+          <div>
+            <div class="text-cyan-300 font-bold">Geometric Interpretation</div>
+            <div class="text-gray-400 text-[11px]">u + v: Parallelogram resultant displacement</div>
+            <div class="text-gray-400 text-[11px]">3 * u: 3x magnitude expansion along line of action</div>
+          </div>
+          <div class="text-2xl font-mono text-cyan-400">&nearr;</div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 22: MATRIX MULTIPLICATION ==================== -->
+    <div id="slide-22" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 22</span><span>&bull;</span><span>Linear Algebra</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Matrix Multiplication: <br><span class="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">The `@` Operator</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Critical Difference: * vs. @:</strong> <code>A * B</code> performs element-wise Hadamard multiplication. <code>A @ B</code> (or <code>np.matmul(A, B)</code>) computes the true algebraic matrix product!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">The Inner Dimension Rule:</strong> To multiply matrix <i>A</i> of shape (<i>M</i> &times; <i>K</i>) by matrix <i>B</i> of shape (<i>K</i> &times; <i>N</i>), the inner dimension <i>K</i> must match! The resulting matrix has shape (<i>M</i> &times; <i>N</i>).</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Core of Artificial Intelligence:</strong> Every dense layer in a neural network (<strong><i>Y</i> = <i>W</i> &middot; <i>X</i> + <i>b</i></strong>) relies directly on matrix multiplication.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Matrix Multiplication (@)">
+A = np.array([[1, 2],
+              [3, 4]])
+
+B = np.array([[2, 0],
+              [1, 2]])
+
+# ❌ Element-wise (Hadamard product)
+print(A * B)
+# [[ 2,  0],
+#  [ 3,  8]]
+
+# ✅ True Matrix Multiplication
+print(A @ B)    # or np.matmul(A, B)
+# [[ 4,  4],
+#  [10,  8]]
+        </pre>
+        <div class="p-3 rounded-xl bg-black/40 border border-white/10 text-xs font-mono">
+          <div class="text-amber-300 font-bold mb-1">Dimension Verification:</div>
+          <div class="text-gray-300 text-[11px]">
+            Matrix A (2 &times; <span class="text-amber-400 font-bold">2</span>) @ Matrix B (<span class="text-amber-400 font-bold">2</span> &times; 2) &rarr; Output (2 &times; 2)
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 23: MATRIX INVERSION ==================== -->
+    <div id="slide-23" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 23</span><span>&bull;</span><span>Linear Algebra</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Matrix Inversion: <br><span class="bg-gradient-to-r from-rose-400 to-purple-400 bg-clip-text text-transparent">`np.linalg.inv()` & Identity</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">The Matrix Inverse (<i>A</i><sup>&minus;1</sup>):</strong> Just as <strong><i>x</i> &times; (1 / <i>x</i>) = 1</strong> in scalar math, multiplying a matrix by its inverse produces the Identity Matrix: <strong><i>A</i> &middot; <i>A</i><sup>&minus;1</sup> = <i>I</i></strong>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Invertibility Requirements:</strong> Matrix <i>A</i> must be square (<i>N</i> &times; <i>N</i>) and non-singular (its determinant <strong>det(<i>A</i>) &ne; 0</strong>). If det(<i>A</i>) = 0, NumPy raises a <code>LinAlgError</code>.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">Solving with NumPy:</strong> Compute the inverse via <code>np.linalg.inv(A)</code>. Verify identity with <code>A @ inv_A</code> using <code>np.allclose()</code> for floating-point tolerance.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-3.5">
+        <pre class="py-code" data-title="Matrix Inversion">
+A = np.array([[4, 7],
+              [2, 6]])
+
+# Compute matrix inverse A^(-1)
+inv_A = np.linalg.inv(A)
+
+print(inv_A)
+# [[ 0.6, -0.7],
+#  [-0.2,  0.4]]
+
+# Verification: A @ A^(-1) == Identity Matrix
+I = A @ inv_A
+print(np.round(I))
+# [[1., 0.],
+#  [0., 1.]]
+        </pre>
+        <div class="p-3 rounded-xl bg-purple-950/30 border border-purple-500/30 text-xs">
+          <div class="text-purple-300 font-bold">Identity Matrix in NumPy:</div>
+          <div class="font-mono text-gray-300 text-[11px] mt-1">
+            <code>np.eye(2)</code> creates a 2x2 identity matrix with 1s along the diagonal.
+          </div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SLIDE 24: RECAP & NEXT STEPS ==================== -->
+    <div id="slide-24" class="slide w-full h-full flex flex-col justify-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+        <div class="lg:col-span-6 space-y-6">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 text-xs font-semibold tracking-wider uppercase">
+            <span>Part 24</span><span>&bull;</span><span>Recap & Next Steps</span>
+          </div>
+
+          <h2 class="text-3xl lg:text-4xl xl:text-5xl font-extrabold text-white leading-tight">
+            Recap, Practice Hub & <br><span class="bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Next Steps</span>
+          </h2>
+
+          <div class="space-y-4 text-gray-300 text-sm lg:text-base">
+            
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">1</div>
+              <p><strong class="text-white">Core Mastery Acquired:</strong> You understand contiguous memory vs pointer arrays, array creation routines, indexing & slicing, the crucial view vs copy trap, broadcasting, ufuncs, and linear algebra!</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">2</div>
+              <p><strong class="text-white">Practice in Google Colab:</strong> Reinforce your knowledge right now in <code>numpy_practice.ipynb</code> with 7 hands-on interactive modules, automated <code>assert</code> test suites, and capstone challenges.</p>
+            </div>
+            <div class="flex items-start space-x-4">
+              <div class="w-7 h-7 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-bold border border-cyan-500/30">3</div>
+              <p><strong class="text-white">What Lies Ahead:</strong> Next Lecture: <strong>Pandas & Data Wrangling</strong>—applying NumPy array power to real-world tabular data, CSVs, time-series, and missing data cleaning!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6">
+          
+      <div class="glass-card rounded-2xl p-5 space-y-4">
+        <div class="p-3.5 rounded-xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/30 space-y-2">
+          <div class="text-xs font-bold text-teal-300 flex items-center justify-between">
+            <span>📓 Google Colab Practice Workbook</span>
+            <span class="px-2 py-0.5 rounded bg-teal-400/20 text-teal-300 font-mono text-[10px]">60+ CELLS</span>
+          </div>
+          <p class="text-[11px] text-gray-300 leading-relaxed">
+            Open <code class="text-teal-200">numpy_practice.ipynb</code> in Google Colab to test your code with auto-graded assertions, hints, and the sensor analytics capstone.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center space-y-2">
+          <div class="text-sm font-bold text-white tracking-wide">THANKS FOR ATTENDING! 🎉</div>
+          <div class="text-xs text-brand-400 font-medium">Usizo Lecture Series &bull; Numerical Computing with Python</div>
+          <div class="text-[10px] text-gray-400">Keep coding &bull; Never stop experimenting &bull; Stay curious</div>
+        </div>
+      </div>
+    
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION CONTROLS -->
+  <footer class="relative z-20 px-8 py-3 flex items-center justify-between border-t border-white/5 bg-darkBg/70 backdrop-blur-md">
+    <!-- Progress bar -->
+    <div class="absolute top-0 left-0 right-0 h-0.5 bg-white/5">
+      <div id="progress-bar" class="h-full bg-gradient-to-r from-teal-400 to-cyan-400 transition-all duration-300" style="width: 4.16%;"></div>
+    </div>
+
+    <div class="text-[11px] text-gray-400 flex items-center space-x-2 font-mono">
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-gray-300">&larr;</kbd>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-gray-300">&rarr;</kbd>
+      <span>Navigate</span>
+      <span class="text-gray-600">&bull;</span>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-gray-300">G</kbd>
+      <span>Overview</span>
+      <span class="text-gray-600">&bull;</span>
+      <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-gray-300">F</kbd>
+      <span>Fullscreen</span>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <button id="btn-prev" onclick="prevSlide()" disabled class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition">
+        &larr; Previous
+      </button>
+      <button id="btn-next" onclick="nextSlide()" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-teal-500 to-cyan-500 text-darkBg font-bold hover:brightness-110 disabled:opacity-30 disabled:pointer-events-none transition shadow-md shadow-cyan-500/20">
+        Next &rarr;
+      </button>
+    </div>
+  </footer>
+
+  <!-- SLIDE GRID OVERVIEW MODAL -->
+  <div id="overview-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-6" aria-hidden="true">
+    <div class="glass-card rounded-2xl p-6 max-w-5xl w-full max-h-[85vh] flex flex-col space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10">
+        <div>
+          <h3 class="text-base font-bold text-white">Lecture 2 &bull; Slide Directory</h3>
+          <p class="text-xs text-gray-400">Click any card or press the corresponding number to jump directly</p>
+        </div>
+        <button onclick="toggleOverviewModal()" aria-label="Close overview" class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 overflow-y-auto pr-1">
+
+      <div data-slide="1" role="button" tabindex="0" aria-label="Go to slide 1: What is NumPy?" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">01 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">What is NumPy?</div>
+        <div class="text-[10px] text-gray-400 mt-1">Numerical Python, ndarrays & the modern scientific stack.</div>
+      </div>
+      <div data-slide="2" role="button" tabindex="0" aria-label="Go to slide 2: Memory Architecture" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">02 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Memory Architecture</div>
+        <div class="text-[10px] text-gray-400 mt-1">Pointer overhead vs. contiguous C array memory blocks.</div>
+      </div>
+      <div data-slide="3" role="button" tabindex="0" aria-label="Go to slide 3: Core Features" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">03 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Core Features</div>
+        <div class="text-[10px] text-gray-400 mt-1">Memory efficiency, broadcasting, math suite & C speed.</div>
+      </div>
+      <div data-slide="4" role="button" tabindex="0" aria-label="Go to slide 4: Importing & Creating Arrays" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">04 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Importing & Creating Arrays</div>
+        <div class="text-[10px] text-gray-400 mt-1">import numpy as np, 1D vectors & 2D matrices.</div>
+      </div>
+      <div data-slide="5" role="button" tabindex="0" aria-label="Go to slide 5: Array Attributes" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">05 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Array Attributes</div>
+        <div class="text-[10px] text-gray-400 mt-1">shape, ndim, size, itemsize, nbytes inspection.</div>
+      </div>
+      <div data-slide="6" role="button" tabindex="0" aria-label="Go to slide 6: Creation Routines" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">06 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Creation Routines</div>
+        <div class="text-[10px] text-gray-400 mt-1">np.zeros, np.ones, np.full & memory pre-allocation.</div>
+      </div>
+      <div data-slide="7" role="button" tabindex="0" aria-label="Go to slide 7: Random Arrays" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">07 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Random Arrays</div>
+        <div class="text-[10px] text-gray-400 mt-1">np.random.rand, np.random.randint & seeds.</div>
+      </div>
+      <div data-slide="8" role="button" tabindex="0" aria-label="Go to slide 8: Array Types & dtypes" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">08 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Array Types & dtypes</div>
+        <div class="text-[10px] text-gray-400 mt-1">3 illustrated columns (Bool, Int, Float) & .dtype.</div>
+      </div>
+      <div data-slide="9" role="button" tabindex="0" aria-label="Go to slide 9: Indexing & Slicing" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">09 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Indexing & Slicing</div>
+        <div class="text-[10px] text-gray-400 mt-1">[row, col] coordinate syntax, row & column slices.</div>
+      </div>
+      <div data-slide="10" role="button" tabindex="0" aria-label="Go to slide 10: Slicing & Striding" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">10 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Slicing & Striding</div>
+        <div class="text-[10px] text-gray-400 mt-1">Forward, stepped, reverse & 2D sub-grid slicing.</div>
+      </div>
+      <div data-slide="11" role="button" tabindex="0" aria-label="Go to slide 11: Views vs Copies" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">11 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Views vs Copies</div>
+        <div class="text-[10px] text-gray-400 mt-1">Why slicing NumPy creates views & mutates base arrays.</div>
+      </div>
+      <div data-slide="12" role="button" tabindex="0" aria-label="Go to slide 12: Copying Arrays" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">12 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Copying Arrays</div>
+        <div class="text-[10px] text-gray-400 mt-1">np.copy(), .copy() & checking .base memory ownership.</div>
+      </div>
+      <div data-slide="13" role="button" tabindex="0" aria-label="Go to slide 13: Element-Wise Operators" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">13 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Element-Wise Operators</div>
+        <div class="text-[10px] text-gray-400 mt-1">Negation, addition, multiplication & SIMD parallelism.</div>
+      </div>
+      <div data-slide="14" role="button" tabindex="0" aria-label="Go to slide 14: Array Comparisons" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">14 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Array Comparisons</div>
+        <div class="text-[10px] text-gray-400 mt-1">Boolean masks, the if a == b trap & np.array_equal().</div>
+      </div>
+      <div data-slide="15" role="button" tabindex="0" aria-label="Go to slide 15: Broadcasting & Constants" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">15 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Broadcasting & Constants</div>
+        <div class="text-[10px] text-gray-400 mt-1">Scalar arithmetic, dimension rules, np.pi, np.e, np.nan.</div>
+      </div>
+      <div data-slide="16" role="button" tabindex="0" aria-label="Go to slide 16: Universal Functions (Ufuncs)" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">16 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Universal Functions (Ufuncs)</div>
+        <div class="text-[10px] text-gray-400 mt-1">np.sin, np.cos, np.sqrt, np.exp, np.log & fast math.</div>
+      </div>
+      <div data-slide="17" role="button" tabindex="0" aria-label="Go to slide 17: Aggregations & Axes" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">17 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Aggregations & Axes</div>
+        <div class="text-[10px] text-gray-400 mt-1">Grand sum, axis=0 (downwards) & axis=1 (rightwards).</div>
+      </div>
+      <div data-slide="18" role="button" tabindex="0" aria-label="Go to slide 18: Exercise 1: Total Price" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">18 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Exercise 1: Total Price</div>
+        <div class="text-[10px] text-gray-400 mt-1">Calculate total grocery bill using prices * quantities.</div>
+      </div>
+      <div data-slide="19" role="button" tabindex="0" aria-label="Go to slide 19: Exercise 2: Kinetic Energy" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">19 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Exercise 2: Kinetic Energy</div>
+        <div class="text-[10px] text-gray-400 mt-1">Compute individual & total 0.5 * m * v^2 for 4 bodies.</div>
+      </div>
+      <div data-slide="20" role="button" tabindex="0" aria-label="Go to slide 20: Exercise 3: Triangle Centroid" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">20 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Exercise 3: Triangle Centroid</div>
+        <div class="text-[10px] text-gray-400 mt-1">Calculate center of mass C = (A + B + C) / 3 in 2D space.</div>
+      </div>
+      <div data-slide="21" role="button" tabindex="0" aria-label="Go to slide 21: Vector Operations" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">21 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Vector Operations</div>
+        <div class="text-[10px] text-gray-400 mt-1">Vector addition, subtraction & scalar multiplication.</div>
+      </div>
+      <div data-slide="22" role="button" tabindex="0" aria-label="Go to slide 22: Matrix Multiplication" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">22 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Matrix Multiplication</div>
+        <div class="text-[10px] text-gray-400 mt-1">@ operator vs np.matmul() vs element-wise *.</div>
+      </div>
+      <div data-slide="23" role="button" tabindex="0" aria-label="Go to slide 23: Matrix Inversion" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">23 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Matrix Inversion</div>
+        <div class="text-[10px] text-gray-400 mt-1">np.linalg.inv(A), identity matrix np.eye & determinant.</div>
+      </div>
+      <div data-slide="24" role="button" tabindex="0" aria-label="Go to slide 24: Recap & Next Steps" class="cursor-pointer group p-3.5 rounded-xl glass-card hover:border-cyan-500/50 transition">
+        <div class="text-[10px] font-mono text-cyan-400 mb-1">24 / 24</div>
+        <div class="text-xs font-bold text-white group-hover:text-cyan-300">Recap & Next Steps</div>
+        <div class="text-[10px] text-gray-400 mt-1">Mastery summary, Google Colab practice notebook & next lecture.</div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CONTROLS & SYNTAX HIGHLIGHTER -->
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 24;
+    let lastFocused = null;
+
+    function goToSlide(n) {
+      currentSlide = Math.min(Math.max(n, 1), totalSlides);
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById('slide-' + currentSlide);
+      if (target) {
+        target.classList.add('active');
+        target.scrollTop = 0;
+      }
+      document.getElementById('current-slide-num').textContent = String(currentSlide).padStart(2, '0');
+      document.getElementById('progress-bar').style.width = (currentSlide / totalSlides * 100) + '%';
+      document.getElementById('btn-prev').disabled = currentSlide === 1;
+      document.getElementById('btn-next').disabled = currentSlide === totalSlides;
+    }
+
+    function nextSlide() { goToSlide(currentSlide + 1); }
+    function prevSlide() { goToSlide(currentSlide - 1); }
+
+    function toggleOverviewModal() {
+      const modal = document.getElementById('overview-modal');
+      const willOpen = modal.classList.contains('hidden');
+      modal.classList.toggle('hidden');
+      modal.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+      if (willOpen) {
+        lastFocused = document.activeElement;
+        modal.querySelector('button').focus();
+      } else if (lastFocused) {
+        lastFocused.focus();
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowRight': case 'PageDown': nextSlide(); break;
+        case 'ArrowLeft': case 'PageUp': prevSlide(); break;
+        case 'Home': goToSlide(1); break;
+        case 'End': goToSlide(totalSlides); break;
+        case 'g': case 'G': toggleOverviewModal(); break;
+        case 'f': case 'F': toggleFullScreen(); break;
+        case 'Escape':
+          if (!document.getElementById('overview-modal').classList.contains('hidden')) toggleOverviewModal();
+          break;
+      }
+    });
+
+    // Modal grid cards click & enter
+    document.querySelectorAll('[data-slide]').forEach(card => {
+      const activate = () => { goToSlide(parseInt(card.dataset.slide, 10)); toggleOverviewModal(); };
+      card.addEventListener('click', activate);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+    });
+
+    // Reusable Syntax Highlighter
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function pyHighlight(code) {
+      const tokenRegex = /(#.*$)|(".*?"|'.*?'|f".*?"|f'.*?')|(\b\d+\.?\d*\b)|(\b(?:print|input|int|float|str|bool|type|len|round|range)\b(?=\s*\())|(\b(?:import|as|from|def|return|if|else|elif|for|in|while|True|False|None|and|or|not|is)\b)/gm;
+
+      return escapeHtml(code).replace(tokenRegex, (match, comment, string, number, func, keyword) => {
+        if (comment) return `<span class="tok-com">${comment}</span>`;
+        if (string)  return `<span class="tok-str">${string}</span>`;
+        if (number)  return `<span class="tok-num">${number}</span>`;
+        if (func)    return `<span class="tok-fn">${func}</span>`;
+        if (keyword) return `<span class="tok-kw">${keyword}</span>`;
+        return match;
+      });
+    }
+
+    function codePanel(code, title = '') {
+      const header = title ? `<div class="text-gray-400 text-[10px] uppercase font-sans tracking-wider mb-1.5 font-semibold">${title}</div>` : '';
+      return `<pre class="code-panel">${header}<code>${pyHighlight(code)}</code></pre>`;
+    }
+
+    function renderCodePanels() {
+      document.querySelectorAll('pre.py-code').forEach(el => {
+        const raw = el.dataset.code || el.textContent;
+        const title = el.dataset.title || '';
+        el.outerHTML = codePanel(raw.trim(), title);
+      });
+    }
+
+    // Dynamic Data Tables
+    const attributesData = [
+      { attr: 'array.shape',    meaning: 'Dimensions tuple (rows, cols)',   example: '(3, 3)' },
+      { attr: 'array.ndim',     meaning: 'Number of axes / dimensions',      example: '2' },
+      { attr: 'array.size',     meaning: 'Total number of elements',         example: '9' },
+      { attr: 'array.itemsize', meaning: 'Bytes consumed per single entry',  example: '8 bytes' },
+      { attr: 'array.nbytes',   meaning: 'Total memory size (size * itemsize)', example: '72 bytes' }
+    ];
+
+    const dtypesData = [
+      { type: 'bool_',    meaning: 'Boolean (True / False)', bits: '8 bits' },
+      { type: 'int32 / int64', meaning: 'Signed integers (Windows: int32, Linux/Mac: int64)', bits: '32 / 64 bits' },
+      { type: 'float32 / 64',  meaning: 'Standard float',        bits: '32 / 64 bits' },
+      { type: '<U3',      meaning: 'Fixed-length Unicode text',  bits: '96 bits' },
+      { type: '|S3',      meaning: 'Raw Byte string',           bits: '24 bits' }
+    ];
+
+    function renderDynamicTables() {
+      const attrTable = document.getElementById('table-attributes');
+      if (attrTable) {
+        attrTable.innerHTML = `<table class="w-full text-left border-collapse text-xs font-mono">
+          <thead>
+            <tr class="border-b border-white/10 text-gray-400 text-[11px] font-sans">
+              <th class="py-1.5">Attribute</th>
+              <th class="py-1.5">Meaning</th>
+              <th class="py-1.5 text-right">Example</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-gray-300">
+            ${attributesData.map(d => `
+              <tr class="hover:bg-white/[0.02]">
+                <td class="py-1.5 font-bold text-cyan-300">${d.attr}</td>
+                <td class="py-1.5 font-sans text-gray-300">${d.meaning}</td>
+                <td class="py-1.5 text-right text-emerald-400 font-bold">${d.example}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+      }
+
+      const dtypesTable = document.getElementById('table-dtypes');
+      if (dtypesTable) {
+        dtypesTable.innerHTML = `<table class="w-full text-left border-collapse text-xs font-mono">
+          <thead>
+            <tr class="border-b border-white/10 text-gray-400 text-[11px] font-sans">
+              <th class="py-1.5">dtype</th>
+              <th class="py-1.5">Description</th>
+              <th class="py-1.5 text-right">Memory</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/5 text-gray-300">
+            ${dtypesData.map(d => `
+              <tr class="hover:bg-white/[0.02]">
+                <td class="py-1.5 font-bold text-amber-300">${d.type}</td>
+                <td class="py-1.5 font-sans text-gray-300">${d.meaning}</td>
+                <td class="py-1.5 text-right text-cyan-400">${d.bits}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`;
+      }
+    }
+
+    renderDynamicTables();
+    renderCodePanels();
+    goToSlide(1);
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Lecture Notes (Do not track or commit to GitHub)
+NumPy_Notes.md
+
+# Jupyter & Python artifacts
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.tmp
