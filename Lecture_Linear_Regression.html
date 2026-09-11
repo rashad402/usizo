@@ -28,27 +28,28 @@
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Outfit', sans-serif; background-color: #090d16; color: #f3f4f6; overflow: hidden; }
-    .slide { opacity: 0; pointer-events: none; visibility: hidden; transform: scale(0.98) translateY(8px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: absolute; inset: 0; }
+    .slide { opacity: 0; pointer-events: none; visibility: hidden; transform: scale(0.98) translateY(8px); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); position: absolute; inset: 0; box-sizing: border-box; }
     .slide.active {
       opacity: 1;
       pointer-events: auto;
       visibility: visible;
       transform: scale(1) translateY(0);
-      position: relative;
-      overflow-y: auto;
-      overflow-x: hidden;
+      position: absolute !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
       overscroll-behavior: contain;
       scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(156, 163, 175, 0.35) rgba(255, 255, 255, 0.03);
       -webkit-overflow-scrolling: touch;
-    }
-    .slide.active > * { margin-top: auto; margin-bottom: auto; }
-    /* Long worked-example slides must start at the top so their full content remains reachable by scrolling. */
-    #slide-29.active, #slide-30.active {
-      justify-content: flex-start;
-    }
-    #slide-29.active > *, #slide-30.active > * {
-      margin-top: 1.25rem;
-      margin-bottom: 2rem;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
     }
 
     .slide.active::-webkit-scrollbar { width: 10px; }
@@ -70,17 +71,21 @@
     body { font-size: 16px; letter-spacing: 0.005em; }
     .slide {
       padding: clamp(1rem, 2.5vw, 2.25rem) !important;
-    }
-    .slide.active {
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
-      min-height: 100%;
+      box-sizing: border-box !important;
     }
     .slide.active > div:first-child {
       width: min(100%, var(--lesson-max));
-      margin: 0 auto !important;
+      margin-inline: auto !important;
+      margin-block: auto !important;
       padding-block: clamp(0.5rem, 1.5vh, 1.25rem);
+    }
+    #slide-29.active, #slide-30.active {
+      padding-top: 1.5rem !important;
+      padding-bottom: 2.5rem !important;
+    }
+    #slide-29.active > div:first-child, #slide-30.active > div:first-child {
+      margin-top: 0 !important;
+      margin-bottom: auto !important;
     }
     .slide h2 {
       font-size: clamp(1.7rem, 2.7vw, 2.35rem) !important;
