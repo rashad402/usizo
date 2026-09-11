@@ -36,6 +36,106 @@
     @keyframes pulseGlow { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.35; transform: scale(1.05); } }
     .ambient-glow { animation: pulseGlow 9s ease-in-out infinite; }
   </style>
+
+  <style id="readability-enhancements">
+    :root {
+      --lesson-max: 1120px;
+      --lesson-gap: clamp(1rem, 2vw, 1.5rem);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-size: 16px; letter-spacing: 0.005em; }
+    .slide {
+      padding: clamp(1rem, 2.5vw, 2.25rem) !important;
+    }
+    .slide.active {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      min-height: 100%;
+    }
+    .slide.active > div:first-child {
+      width: min(100%, var(--lesson-max));
+      margin: 0 auto !important;
+      padding-block: clamp(0.5rem, 1.5vh, 1.25rem);
+    }
+    .slide h2 {
+      font-size: clamp(1.7rem, 2.7vw, 2.35rem) !important;
+      line-height: 1.15 !important;
+      letter-spacing: -0.02em;
+      text-wrap: balance;
+    }
+    .slide h3 {
+      line-height: 1.25 !important;
+      text-wrap: balance;
+    }
+    .slide p.leading-relaxed,
+    .slide li,
+    .slide td,
+    .slide th {
+      font-size: 0.93rem !important;
+      line-height: 1.55 !important;
+    }
+    .slide p.text-sm,
+    .slide p.text-xs {
+      line-height: 1.5 !important;
+    }
+    .slide .glass-card {
+      border-radius: 1.15rem;
+      box-shadow: 0 12px 30px -18px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.025);
+    }
+    .slide .glass-card > h3:first-child,
+    .slide .glass-card > div:first-child + h3,
+    .slide .glass-card > .text-xs.font-mono:first-child {
+      letter-spacing: 0.015em;
+    }
+    .slide table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .slide tbody tr:hover { background: rgba(255,255,255,.025); }
+    .slide svg {
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
+    }
+    /* Make important equations read like teaching anchors. */
+    .slide .font-mono.text-xl,
+    .slide .font-mono.text-2xl,
+    .slide .font-mono.text-3xl,
+    .slide .text-3xl.font-bold.font-mono {
+      font-size: clamp(1.15rem, 2vw, 1.65rem) !important;
+      line-height: 1.35 !important;
+      letter-spacing: .015em;
+    }
+    /* Give step labels a consistent visual hierarchy. */
+    .slide > div:first-child > div:first-child > span {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      margin-bottom: .35rem;
+      font-size: .7rem !important;
+      font-weight: 700;
+    }
+    .slide strong { font-weight: 700; color: #f8fafc; }
+    /* Keep dense tables readable without forcing tiny type. */
+    .slide .overflow-x-auto { scrollbar-width: thin; }
+    /* Mobile / small-screen safeguards. */
+    @media (max-width: 768px) {
+      header { padding-inline: 1rem !important; }
+      header h1 { display: none; }
+      header .text-\[11px\] { display: none; }
+      footer { padding-inline: 1rem !important; }
+      footer .hidden.sm\:inline { display: none !important; }
+      .slide { padding: 1rem !important; }
+      .slide p.leading-relaxed,
+      .slide li,
+      .slide td,
+      .slide th { font-size: .88rem !important; }
+    }
+    @media (max-height: 760px) and (min-width: 769px) {
+      .slide.active > div:first-child { padding-block: .25rem; }
+      .slide h2 { font-size: 1.85rem !important; }
+      .slide .glass-card { padding: 1.1rem !important; }
+    }
+  </style>
 </head>
 <body class="h-screen w-screen flex flex-col justify-between relative selection:bg-brand-500 selection:text-white">
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -200,11 +300,11 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/5 font-mono text-gray-300">
-                <tr><td class="py-2.5">0 Years (Fresher)</td><td class="py-2.5 text-right font-bold text-white">?2,00,000 (2 Lakhs)</td></tr>
-                <tr><td class="py-2.5">2 Years</td><td class="py-2.5 text-right font-bold text-white">?4,00,000 (4 Lakhs)</td></tr>
-                <tr><td class="py-2.5">4 Years</td><td class="py-2.5 text-right font-bold text-white">?8,00,000 (8 Lakhs)</td></tr>
-                <tr><td class="py-2.5">5 Years</td><td class="py-2.5 text-right font-bold text-white">?10,00,000 (10 Lakhs)</td></tr>
-                <tr><td class="py-2.5">6 Years</td><td class="py-2.5 text-right font-bold text-white">?12,00,000 (12 Lakhs)</td></tr>
+                <tr><td class="py-2.5">0 Years (Fresher)</td><td class="py-2.5 text-right font-bold text-white">₹2,00,000 (2 Lakhs)</td></tr>
+                <tr><td class="py-2.5">2 Years</td><td class="py-2.5 text-right font-bold text-white">₹4,00,000 (4 Lakhs)</td></tr>
+                <tr><td class="py-2.5">4 Years</td><td class="py-2.5 text-right font-bold text-white">₹8,00,000 (8 Lakhs)</td></tr>
+                <tr><td class="py-2.5">5 Years</td><td class="py-2.5 text-right font-bold text-white">₹10,00,000 (10 Lakhs)</td></tr>
+                <tr><td class="py-2.5">6 Years</td><td class="py-2.5 text-right font-bold text-white">₹12,00,000 (12 Lakhs)</td></tr>
               </tbody>
             </table>
           </div>
@@ -260,11 +360,11 @@
           <div class="glass-card p-6 rounded-2xl space-y-4 text-xs text-gray-300">
             <h3 class="text-sm font-semibold text-white">Axis Scales & Trend</h3>
             <p><strong>X-Axis:</strong> Years of experience (1 unit = 1 year, 0 to 7).</p>
-            <p><strong>Y-Axis:</strong> Annual salary (1 unit = ?2,00,000 / 2 Lakhs, 0 to 14 Lakhs).</p>
+            <p><strong>Y-Axis:</strong> Annual salary (1 unit = ₹2,00,000 / 2 Lakhs, 0 to 14 Lakhs).</p>
             <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <span class="text-brand-400 font-semibold text-xs">Linear Trend Observation:</span>
               <p class="leading-relaxed">
-                As X increases, Y consistently increases. There is no fluctuation where values rise and then fall. There is <strong>no randomness</strong> ? only a single upward linear trend.
+                As X increases, Y generally increases, showing a <strong>clear upward trend</strong>. The points are close to a straight-line pattern, but they are not perfectly linear — for example, the change from (0, 2L) to (2, 4L) differs from the other intervals.
               </p>
             </div>
           </div>
@@ -350,13 +450,13 @@
                 Project vertical line from X = 3 up to the line, then left to Y-axis:
               </p>
               <p class="text-amber-200 text-xs font-mono">
-                Salary ? ?6,50,000 (6 Lakh 50 Thousand per year)
+                Salary → ₹6,50,000 (6 Lakh 50 Thousand per year)
               </p>
             </div>
             <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
               <span class="text-cyan-400 font-bold text-xs uppercase font-mono">Reverse Prediction (Y = 14 Lakhs)</span>
               <p class="leading-relaxed">
-                If an engineer makes ?14,00,000 (14 Lakhs) per year, trace horizontally from 14L to the line and drop to the X-axis to estimate their expected years of experience.
+                If an engineer makes ₹14,00,000 (14 Lakhs) per year, trace horizontally from 14L to the line and drop to the X-axis to estimate their expected years of experience.
               </p>
             </div>
           </div>
@@ -446,12 +546,12 @@
           <div class="glass-card p-6 rounded-2xl space-y-4">
             <div class="text-xs font-mono uppercase text-teal-300">Slope Formula:</div>
             <div class="text-xl font-mono text-white p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              m = (y? - y?) / (x? - x?)
+              m = (y₂ - y₁) / (x₂ - x₁)
             </div>
             <div class="text-xs text-gray-300 space-y-2">
               <p>Substitute Point 1 and Point 2:</p>
-              <p class="font-mono text-white">P? = (2, 7) &rarr; x? = 2, y? = 7</p>
-              <p class="font-mono text-white">P? = (3, 9) &rarr; x? = 3, y? = 9</p>
+              <p class="font-mono text-white">P₁ = (2, 7) &rarr; x₁ = 2, y₁ = 7</p>
+              <p class="font-mono text-white">P₂ = (3, 9) &rarr; x₂ = 3, y₂ = 9</p>
               <div class="p-3 rounded-lg bg-brand-500/10 border border-brand-500/20 font-mono text-teal-200">
                 m = (9 - 7) / (3 - 2) = 2 / 1 = <strong>2</strong>
               </div>
@@ -631,28 +731,28 @@
           <div class="glass-card p-6 rounded-2xl space-y-4 border-t-2 border-teal-400">
             <span class="text-xs font-mono text-brand-400 uppercase">Simple Linear Regression (1 Feature)</span>
             <div class="text-2xl font-mono text-white p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              y = b? + b?x?
+              y = b₀ + b₁x₁
             </div>
             <div class="text-xs text-gray-300 space-y-2">
               <p>Identical to <span class="font-mono text-teal-300">y = c + mx</span>:</p>
               <ul class="space-y-1 text-gray-400">
-                <li>&bull; <strong class="text-white">b?:</strong> Intercept (c)</li>
-                <li>&bull; <strong class="text-white">b?:</strong> Slope / weight parameter (m)</li>
-                <li>&bull; <strong class="text-white">x?:</strong> Single independent variable</li>
+                <li>&bull; <strong class="text-white">b₀:</strong> Intercept (c)</li>
+                <li>&bull; <strong class="text-white">b₁:</strong> Slope / weight parameter (m)</li>
+                <li>&bull; <strong class="text-white">x₁:</strong> Single independent variable</li>
               </ul>
             </div>
           </div>
           <div class="glass-card p-6 rounded-2xl space-y-4 border-t-2 border-cyan-400">
             <span class="text-xs font-mono text-cyan-400 uppercase">Multiple Linear Regression (N Features)</span>
             <div class="text-xl font-mono text-white p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              y = b? + b?x? + b?x? + ... + b?x?
+              y = b₀ + b₁x₁ + b₂x₂ + ... + bₙxₙ
             </div>
             <div class="text-xs text-gray-300 space-y-2">
               <p>Used when datasets contain multiple features:</p>
               <ul class="space-y-1 text-gray-400">
-                <li>&bull; <strong class="text-white">b?:</strong> Intercept</li>
-                <li>&bull; <strong class="text-white">b?, b?, ... b?:</strong> Parameters / weights for features</li>
-                <li>&bull; <strong class="text-white">x?, x?, ... x?:</strong> Multiple independent features</li>
+                <li>&bull; <strong class="text-white">b₀:</strong> Intercept</li>
+                <li>&bull; <strong class="text-white">b₁, b₂, ... bₙ:</strong> Parameters / weights for features</li>
+                <li>&bull; <strong class="text-white">x₁, x₂, ... xₙ:</strong> Multiple independent features</li>
               </ul>
             </div>
           </div>
@@ -762,6 +862,44 @@
     <div id="slide-19" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
+          <span class="text-xs font-mono text-brand-400 uppercase tracking-widest">The Missing Bridge</span>
+          <h2 class="text-3xl font-bold text-white mt-1">Why Do We Need Loss &amp; Gradient Descent?</h2>
+          <p class="text-gray-400 text-sm mt-1">Connecting our earlier line-fitting intuition to the algorithmic learning process.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div class="glass-card p-5 rounded-2xl space-y-3 border-t-2 border-rose-400">
+            <div class="text-xs font-mono uppercase text-rose-300">1. Real Data Is Noisy</div>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              In real datasets, points rarely lie perfectly on one straight line. The salary example already shows this: one point sits slightly away from the main trend.
+            </p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl space-y-3 border-t-2 border-amber-400">
+            <div class="text-xs font-mono uppercase text-amber-300">2. Two Points Aren't Enough</div>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              Two points can determine a line exactly, but with many noisy points there are many possible pairs — and different pairs can produce different lines. We need a rule that uses <strong>all</strong> the data.
+            </p>
+          </div>
+          <div class="glass-card p-5 rounded-2xl space-y-3 border-t-2 border-cyan-400">
+            <div class="text-xs font-mono uppercase text-cyan-300">3. Define “Best Fit”</div>
+            <p class="text-xs text-gray-300 leading-relaxed">
+              We measure the total prediction error with a <strong>loss function</strong> and search for the parameter values that make that loss as small as possible.
+            </p>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl bg-brand-500/10 border-brand-500/30">
+          <div class="grid md:grid-cols-[1fr_auto] gap-4 items-center">
+            <p class="text-xs text-gray-200 leading-relaxed">
+              <strong class="text-white">Why Gradient Descent?</strong> It is one way to efficiently search for the parameter values that minimize the loss. For linear regression, an exact <strong>closed-form solution (Ordinary Least Squares / Normal Equation)</strong> also exists; Gradient Descent is useful to learn because the same optimization idea extends to models where no closed-form solution is available.
+            </p>
+            <div class="px-3 py-2 rounded-lg bg-white/[0.04] border border-white/10 text-[10px] font-mono text-brand-300 whitespace-nowrap">Data → Loss → Optimize</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="slide-20" class="slide flex items-center justify-center p-8">
+      <div class="max-w-5xl w-full space-y-6">
+        <div>
           <span class="text-xs font-mono text-brand-400 uppercase tracking-widest">Mathematical Understanding &bull; Part 2</span>
           <h2 class="text-3xl font-bold text-white mt-1">The Algorithmic Challenge: Finding the Best Line</h2>
           <p class="text-gray-400 text-sm mt-1">How does a machine learning algorithm know which candidate line is best?</p>
@@ -799,7 +937,7 @@
       </div>
     </div>
 
-    <div id="slide-20" class="slide flex items-center justify-center p-8">
+    <div id="slide-21" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-8">
         <div>
           <span class="text-xs font-mono text-teal-400 uppercase tracking-widest">Error Quantification</span>
@@ -838,7 +976,7 @@
       </div>
     </div>
 
-    <div id="slide-21" class="slide flex items-center justify-center p-8">
+    <div id="slide-22" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
           <span class="text-xs font-mono text-teal-400 uppercase tracking-widest">Mathematical Formula</span>
@@ -849,7 +987,7 @@
           <div class="glass-card p-6 rounded-2xl space-y-4">
             <div class="text-xs font-mono uppercase text-teal-300">Loss Formula:</div>
             <div class="text-xl font-mono text-white p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              Loss = &frac11;n &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)&sup2;
+              Loss = (1/n) &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)&sup2;
             </div>
             <div class="text-xs text-gray-300 space-y-1.5">
               <p>&bull; <strong class="text-white">y<sub>i</sub>:</strong> True actual value for point i.</p>
@@ -873,7 +1011,7 @@
       </div>
     </div>
 
-    <div id="slide-22" class="slide flex items-center justify-center p-8">
+    <div id="slide-23" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-5">
         <div>
           <span class="text-xs font-mono text-teal-400 uppercase tracking-widest">Step-by-Step Calculation</span>
@@ -913,7 +1051,7 @@
       </div>
     </div>
 
-    <div id="slide-23" class="slide flex items-center justify-center p-8">
+    <div id="slide-24" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-8">
         <div>
           <span class="text-xs font-mono text-teal-400 uppercase tracking-widest">Model Evaluation</span>
@@ -954,12 +1092,12 @@
       </div>
     </div>
 
-    <div id="slide-24" class="slide flex items-center justify-center p-8">
+    <div id="slide-25" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
           <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Optimization &bull; Part 3</span>
           <h2 class="text-3xl font-bold text-white mt-1">The Loss Surface & Global Minimum</h2>
-          <p class="text-gray-400 text-sm mt-1">Visualizing the U-shaped convex loss curve.</p>
+          <p class="text-gray-400 text-sm mt-1">Visualizing a simplified 1D cross-section of the convex loss surface.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
           <div class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center">
@@ -973,7 +1111,7 @@
               <path d="M 60 40 Q 200 260 340 40" fill="none" stroke="#22d3ee" stroke-width="2.5" />
               <!-- Initial point (m1, c1) -->
               <circle cx="90" cy="80" r="5" fill="#f43f5e" />
-              <text x="100" y="75" fill="#f43f5e" font-size="10" font-mono font-bold">Initial (m?, c?)</text>
+              <text x="100" y="75" fill="#f43f5e" font-size="10" font-mono font-bold">Initial (m₁, c₁)</text>
               <!-- Global minimum -->
               <circle cx="200" cy="180" r="6" fill="#10b981" stroke="#fff" stroke-width="1.5" />
               <text x="200" y="200" fill="#10b981" font-size="10" font-bold text-anchor="middle">Global Minimum (m*, c*)</text>
@@ -982,7 +1120,7 @@
           <div class="glass-card p-6 rounded-2xl space-y-4 text-xs text-gray-300">
             <h3 class="text-sm font-semibold text-white">The Global Minimum</h3>
             <p class="leading-relaxed">
-              When plotting parameter values against loss, we obtain a <strong>U-shaped curve</strong>.
+              With two parameters (m and c), the full loss surface is a 3D bowl over the (m, c) plane. This sketch shows a <strong>1D cross-section</strong> of that surface, so we can see the descent into the valley more easily.
             </p>
             <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2">
               <span class="text-emerald-400 font-semibold text-xs">The Lowest Point:</span>
@@ -995,7 +1133,7 @@
       </div>
     </div>
 
-    <div id="slide-25" class="slide flex items-center justify-center p-8">
+    <div id="slide-26" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
           <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Algorithm Mechanics</span>
@@ -1021,7 +1159,7 @@
             <h3 class="text-sm font-semibold text-white">Term Definitions</h3>
             <ul class="space-y-2">
               <li>&bull; <strong class="text-white">m, c:</strong> Current slope and intercept values.</li>
-              <li>&bull; <strong class="text-cyan-300">L:</strong> <strong>Learning Rate</strong> (magnitude of adjustment step).</li>
+              <li>&bull; <strong class="text-cyan-300">L:</strong> <strong>Learning Rate</strong> (scales the gradient to determine the update).</li>
               <li>&bull; <strong class="text-teal-300">dm:</strong> Partial derivative of loss with respect to m (&part;Loss / &part;m).</li>
               <li>&bull; <strong class="text-teal-300">dc:</strong> Partial derivative of loss with respect to c (&part;Loss / &part;c).</li>
             </ul>
@@ -1030,7 +1168,7 @@
       </div>
     </div>
 
-    <div id="slide-26" class="slide flex items-center justify-center p-8">
+    <div id="slide-27" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-8">
         <div>
           <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Hyperparameter Tuning</span>
@@ -1041,10 +1179,10 @@
           <div class="glass-card p-6 rounded-2xl space-y-3">
             <h3 class="text-base font-bold text-white">Concept & Example</h3>
             <p class="text-xs text-gray-300 leading-relaxed">
-              Suppose initial slope m = 1000 and intercept c = 500. If we choose to update parameters by 50 units per step, <strong>L</strong> scales that update step.
+              The learning rate <strong>L</strong> is chosen first. The actual parameter update is determined by <strong>L × gradient</strong>. For example, if <strong>dm = 20</strong> and <strong>L = 0.001</strong>, then the update to m is <strong>0.001 × 20 = 0.02</strong>.
             </p>
             <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-gray-300">
-              Learning rate is the <strong>magnitude of change</strong> willing to be made to the parameters per iteration.
+              Learning rate controls how strongly the computed gradient changes the parameters at each iteration.
             </div>
           </div>
           <div class="glass-card p-6 rounded-2xl space-y-3 border-l-4 border-cyan-400">
@@ -1062,18 +1200,18 @@
       </div>
     </div>
 
-    <div id="slide-27" class="slide flex items-center justify-center p-8">
+    <div id="slide-28" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
           <span class="text-xs font-mono text-cyan-400 uppercase tracking-widest">Calculus Derivation</span>
           <h2 class="text-3xl font-bold text-white mt-1">Mathematical Derivation of dm and dc</h2>
-          <p class="text-gray-400 text-sm mt-1">Differentiating the Cost Function with respect to m and c via Chain Rule.</p>
+          <p class="text-gray-400 text-sm mt-1">Differentiating the Loss Function with respect to m and c via the Chain Rule.</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="glass-card p-6 rounded-2xl space-y-4">
             <div class="text-xs font-mono uppercase text-teal-300">Partial Derivative for Slope (dm):</div>
             <div class="text-lg font-mono text-white p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              dm = -&frac21;n &sum; x<sub>i</sub>(y<sub>i</sub> - &#375;<sub>i</sub>)
+              dm = -(2/n) &sum; x<sub>i</sub>(y<sub>i</sub> - &#375;<sub>i</sub>)
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
               Differentiating [y<sub>i</sub> - (mx<sub>i</sub> + c)]&sup2; with respect to m pulls down 2, multiplies by inner derivative (-x<sub>i</sub>), and averages over n points.
@@ -1082,17 +1220,20 @@
           <div class="glass-card p-6 rounded-2xl space-y-4">
             <div class="text-xs font-mono uppercase text-cyan-300">Partial Derivative for Intercept (dc):</div>
             <div class="text-lg font-mono text-white p-3 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-              dc = -&frac21;n &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)
+              dc = -(2/n) &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)
             </div>
             <p class="text-xs text-gray-300 leading-relaxed">
               Differentiating with respect to c pulls down 2, multiplies by inner derivative (-1), and averages over n points.
             </p>
           </div>
         </div>
+        <div class="text-[11px] text-gray-400 font-mono text-center pt-1">
+          Terminology note: this deck uses <strong class="text-gray-300">Loss Function</strong> for the averaged MSE over the dataset; some courses call the same quantity the <strong class="text-gray-300">Cost Function</strong>.
+        </div>
       </div>
     </div>
 
-    <div id="slide-28" class="slide flex items-center justify-center p-8">
+    <div id="slide-29" class="slide flex items-center justify-center p-8">
       <div class="max-w-5xl w-full space-y-6">
         <div>
           <span class="text-xs font-mono text-brand-400 uppercase tracking-widest">Synthesis</span>
@@ -1111,7 +1252,7 @@
             </div>
             <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <span class="text-cyan-400 font-bold">3. Compute Loss</span>
-              <p class="text-gray-300 mt-1 font-sans">Evaluate MSE: &frac11;n &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)&sup2;.</p>
+              <p class="text-gray-300 mt-1 font-sans">Evaluate MSE: (1/n) &sum; (y<sub>i</sub> - &#375;<sub>i</sub>)&sup2;.</p>
             </div>
             <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5">
               <span class="text-brand-400 font-bold">4. Compute Gradients</span>
@@ -1134,7 +1275,7 @@
 
   <footer class="relative z-20 px-8 py-3 flex items-center justify-between border-t border-white/5 bg-darkBg/70 backdrop-blur-md text-xs">
     <div class="flex items-center space-x-4">
-      <span class="text-gray-400 font-mono">Slide <span id="current-slide-num" class="text-white font-bold">01</span> / 28</span>
+      <span class="text-gray-400 font-mono">Slide <span id="current-slide-num" class="text-white font-bold">01</span> / 29</span>
       <span class="text-gray-600">|</span>
       <span class="text-gray-400 hidden sm:inline text-[11px]">Navigate: &larr; &rarr; or Space</span>
     </div>
@@ -1151,7 +1292,7 @@
   <div id="overview-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl p-8 overflow-y-auto hidden" aria-hidden="true">
     <div class="max-w-6xl mx-auto space-y-6">
       <div class="flex items-center justify-between">
-        <h2 class="text-lg font-bold text-white font-mono">Slide Overview (28 Slides)</h2>
+        <h2 class="text-lg font-bold text-white font-mono">Slide Overview (29 Slides)</h2>
         <button onclick="toggleOverviewModal()" class="text-gray-400 hover:text-white text-sm font-mono px-3 py-1 glass-pill rounded-lg">Close (Esc)</button>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3" id="overview-grid"></div>
@@ -1159,7 +1300,7 @@
   </div>
 
   <script>
-    const totalSlides = 28;
+    const totalSlides = 29;
     let currentSlide = 1;
 
     const slideTitles = [
@@ -1181,6 +1322,7 @@
       "Advantages of Linear Regression",
       "Disadvantage: Non-Linear Data",
       "Underfitting & Outliers",
+      "The Missing Bridge: Why Optimization?",
       "The Algorithmic Challenge",
       "The Loss Function: Purpose",
       "Mean Squared Error (MSE) Formula",
